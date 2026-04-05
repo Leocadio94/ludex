@@ -40,8 +40,7 @@ export default function Command() {
         : await loadManifest(setStatusMsg);
 
       setStatusMsg("Detecting installed games...");
-
-      const installed = await detectInstalledGames();
+      const installed = await detectInstalledGames(forceRefresh);
 
       setStatusMsg("Matching against database...");
       const matched = matchGames(installed, manifest);
@@ -59,6 +58,25 @@ export default function Command() {
       await showToast({
         style: Toast.Style.Failure,
         title: "Error loading games",
+        message: String(err),
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function refreshInstalled() {
+    setIsLoading(true);
+    try {
+      const manifest = await loadManifest(setStatusMsg);
+      setStatusMsg("Re-detecting installed games...");
+      const installed = await detectInstalledGames(true);
+      setStatusMsg("Matching against database...");
+      setGames(matchGames(installed, manifest));
+    } catch (err) {
+      await showToast({
+        style: Toast.Style.Failure,
+        title: "Error refreshing installed games",
         message: String(err),
       });
     } finally {
@@ -94,6 +112,7 @@ export default function Command() {
               key={`${game.store}-${game.storeGameId ?? game.name}`}
               game={game}
               onRefresh={() => loadGames(true)}
+              onRefreshInstalled={refreshInstalled}
             />
           ))}
         </List.Section>
@@ -105,9 +124,11 @@ export default function Command() {
 function GameListItem({
   game,
   onRefresh,
+  onRefreshInstalled,
 }: {
   game: GameWithPaths;
   onRefresh: () => void;
+  onRefreshInstalled: () => void;
 }) {
   const saveCount = game.savePaths.length;
   const configCount = game.configPaths.length;
@@ -146,9 +167,15 @@ function GameListItem({
           <ConfigActions paths={game.configPaths} />
           <ActionPanel.Section>
             <Action
-              title="Refresh Game Database"
+              title="Refresh Installed Games"
               icon={Icon.ArrowClockwise}
               shortcut={{ modifiers: ["cmd"], key: "r" }}
+              onAction={onRefreshInstalled}
+            />
+            <Action
+              title="Refresh Game Database"
+              icon={Icon.Download}
+              shortcut={{ modifiers: ["cmd", "shift"], key: "r" }}
               onAction={onRefresh}
             />
           </ActionPanel.Section>

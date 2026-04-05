@@ -23,6 +23,12 @@
       "title": "Refresh Game Database",
       "description": "Force re-download and re-index the game save database",
       "mode": "no-view"
+    },
+    {
+      "name": "refresh-installed-games",
+      "title": "Refresh Installed Games",
+      "description": "Re-detect installed games and update the cache",
+      "mode": "no-view"
     }
   ],
   "dependencies": {
