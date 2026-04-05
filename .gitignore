@@ -12,3 +12,11 @@ compiled_raycast_rust
 
 # misc
 .DS_Store
+
+# IDE-specific files
+.vscode/
+.claude/
+.zed/
+.windsurf/
+.idea/
+CLAUDE.md
