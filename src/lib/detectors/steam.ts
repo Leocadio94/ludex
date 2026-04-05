@@ -177,7 +177,6 @@ function readAcfFiles(steamAppsPath: string): SteamAcf[] {
 
 export async function detectSteamGames(): Promise<InstalledGame[]> {
   const steamRoot = getSteamRoot();
-  console.log("🚀 ~ steam.ts:147 ~ detectSteamGames ~ steamRoot:", steamRoot);
   if (!steamRoot) return [];
 
   const games: InstalledGame[] = [];

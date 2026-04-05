@@ -13,10 +13,16 @@
       "mode": "view"
     },
     {
-      "name": "download-manifest-test",
-      "title": "Download Manifest Test",
-      "description": "Test command to download a manifest file",
+      "name": "search-games",
+      "title": "Search Games",
+      "description": "Search all games in the save manager database",
       "mode": "view"
+    },
+    {
+      "name": "refresh-cache",
+      "title": "Refresh Game Database",
+      "description": "Force re-download and re-index the game save database",
+      "mode": "no-view"
     }
   ],
   "dependencies": {

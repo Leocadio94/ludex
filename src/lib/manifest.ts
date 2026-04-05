@@ -247,7 +247,7 @@ function buildIndexToFile(onProgress?: (msg: string) => void): Promise<void> {
 
       if (line.length > 0 && line[0] !== " " && line[0] !== "\t") {
         flushEntry();
-        if (line.startsWith('"')) entryLines = [line];
+        entryLines = [line]; // all root-level lines are game names (quoted or unquoted)
       } else if (entryLines.length > 0) {
         entryLines.push(line);
       }

@@ -5,9 +5,13 @@ import {
   Icon,
   List,
   open,
+  showInFinder,
   showToast,
   Toast,
 } from "@raycast/api";
+import fs from "fs";
+import os from "os";
+import path from "path";
 import { useEffect, useState } from "react";
 import { detectInstalledGames } from "./lib/game-detector";
 import { loadManifest, refreshManifest } from "./lib/manifest";
@@ -25,10 +29,8 @@ const STORE_ORDER: Store[] = ["steam", "gog", "epic", "xbox"];
 
 export default function Command() {
   const [games, setGames] = useState<GameWithPaths[]>([]);
-  console.log("🚀 ~ browse-games.tsx:28 ~ Command ~ games:", games);
   const [isLoading, setIsLoading] = useState(true);
   const [statusMsg, setStatusMsg] = useState("Starting...");
-  // const mountedRef = useRef(true);
 
   async function loadGames(forceRefresh = false) {
     setIsLoading(true);
@@ -37,24 +39,13 @@ export default function Command() {
         ? await refreshManifest(setStatusMsg)
         : await loadManifest(setStatusMsg);
 
-      // if (!mountedRef.current) return;
       setStatusMsg("Detecting installed games...");
 
       const installed = await detectInstalledGames();
-      // console.log(
-      //   "🚀 ~ browse-games.tsx:44 ~ loadGames ~ installed:",
-      //   installed
-      // );
-      // console.log(
-      //   "🚀 ~ browse-games.tsx:43 ~ loadGames ~ installed:",
-      //   installed
-      // );
-      // if (!mountedRef.current) return;
 
       setStatusMsg("Matching against database...");
       const matched = matchGames(installed, manifest);
 
-      // if (!mountedRef.current) return;
       setGames(matched);
 
       if (matched.length === 0) {
@@ -65,14 +56,12 @@ export default function Command() {
         });
       }
     } catch (err) {
-      // if (!mountedRef.current) return;
       await showToast({
         style: Toast.Style.Failure,
         title: "Error loading games",
         message: String(err),
       });
     } finally {
-      // if (mountedRef.current) setIsLoading(false);
       setIsLoading(false);
     }
   }
@@ -81,10 +70,6 @@ export default function Command() {
     (async () => {
       await loadGames();
     })();
-
-    // return () => {
-    //   mountedRef.current = false;
-    // };
   }, []);
 
   const byStore = STORE_ORDER.map((store) => ({
@@ -173,6 +158,24 @@ function GameListItem({
   );
 }
 
+function pathLabel(p: ResolvedPath): string | undefined {
+  const parts: string[] = [];
+  if (p.os) parts.push(p.os.charAt(0).toUpperCase() + p.os.slice(1));
+  if (p.store) parts.push(p.store.charAt(0).toUpperCase() + p.store.slice(1));
+  return parts.length > 0 ? parts.join(", ") : undefined;
+}
+
+function openFolder(p: ResolvedPath) {
+  // If the path is a file (exists: check stat; otherwise: infer from extension), open its parent folder
+  let target = p.path;
+  if (p.exists) {
+    if (fs.statSync(p.path).isFile()) target = path.dirname(p.path);
+  } else if (path.extname(p.path)) {
+    target = path.dirname(p.path);
+  }
+  return os.platform() === "darwin" ? showInFinder(target) : open(target);
+}
+
 function SaveActions({ paths }: { paths: ResolvedPath[] }) {
   if (paths.length === 0) return null;
   return (
@@ -180,17 +183,12 @@ function SaveActions({ paths }: { paths: ResolvedPath[] }) {
       {paths.map((p, i) => (
         <Action
           key={i}
-          title={
-            paths.length > 1 ? `Open Save Folder ${i + 1}` : "Open Save Folder"
-          }
+          title={(() => {
+            const label = pathLabel(p);
+            return label ? `Open Save Folder (${label})` : "Open Save Folder";
+          })()}
           icon={p.exists ? Icon.Folder : Icon.QuestionMark}
-          onAction={() => {
-            console.log(
-              "🚀 ~ browse-games.tsx:173 ~ SaveActions ~ p.path:",
-              p.path
-            );
-            open(p.path);
-          }}
+          onAction={() => openFolder(p)}
         />
       ))}
     </ActionPanel.Section>
@@ -204,13 +202,14 @@ function ConfigActions({ paths }: { paths: ResolvedPath[] }) {
       {paths.map((p, i) => (
         <Action
           key={i}
-          title={
-            paths.length > 1
-              ? `Open Config Folder ${i + 1}`
-              : "Open Config Folder"
-          }
+          title={(() => {
+            const label = pathLabel(p);
+            return label
+              ? `Open Config Folder (${label})`
+              : "Open Config Folder";
+          })()}
           icon={p.exists ? Icon.Gear : Icon.QuestionMark}
-          onAction={() => open(p.path)}
+          onAction={() => openFolder(p)}
         />
       ))}
     </ActionPanel.Section>
