@@ -82,6 +82,7 @@ export function matchGames(
         const rp: ResolvedPath = {
           path: p,
           exists: !p.includes("*") && fs.existsSync(p),
+          tags: file.tags,
           os: file.os,
           store: file.store,
         };

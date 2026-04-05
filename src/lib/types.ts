@@ -50,6 +50,7 @@ export type ManifestIndex = Record<string, IndexedGame>;
 export interface ResolvedPath {
   path: string;
   exists: boolean;
+  tags: PathTag[];
   os?: OS;
   store?: string;
 }

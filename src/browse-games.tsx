@@ -192,6 +192,13 @@ function pathLabel(p: ResolvedPath): string | undefined {
   return parts.length > 0 ? parts.join(", ") : undefined;
 }
 
+function folderTitle(p: ResolvedPath, context: "save" | "config"): string {
+  const hasBoth = p.tags.includes("save") && p.tags.includes("config");
+  const base = hasBoth ? "Save & Config Folder" : context === "save" ? "Save Folder" : "Config Folder";
+  const label = pathLabel(p);
+  return label ? `Open ${base} (${label})` : `Open ${base}`;
+}
+
 function openFolder(p: ResolvedPath) {
   // If the path is a file (exists: check stat; otherwise: infer from extension), open its parent folder
   let target = p.path;
@@ -210,10 +217,7 @@ function SaveActions({ paths }: { paths: ResolvedPath[] }) {
       {paths.map((p, i) => (
         <Action
           key={i}
-          title={(() => {
-            const label = pathLabel(p);
-            return label ? `Open Save Folder (${label})` : "Open Save Folder";
-          })()}
+          title={folderTitle(p, "save")}
           icon={p.exists ? Icon.Folder : Icon.QuestionMark}
           onAction={() => openFolder(p)}
         />
@@ -229,12 +233,7 @@ function ConfigActions({ paths }: { paths: ResolvedPath[] }) {
       {paths.map((p, i) => (
         <Action
           key={i}
-          title={(() => {
-            const label = pathLabel(p);
-            return label
-              ? `Open Config Folder (${label})`
-              : "Open Config Folder";
-          })()}
+          title={folderTitle(p, "config")}
           icon={p.exists ? Icon.Gear : Icon.QuestionMark}
           onAction={() => openFolder(p)}
         />
