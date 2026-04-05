@@ -15,8 +15,6 @@ compiled_raycast_rust
 
 # IDE-specific files
 .vscode/
-.claude/
 .zed/
 .windsurf/
 .idea/
-CLAUDE.md
