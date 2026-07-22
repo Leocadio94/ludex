@@ -1,0 +1,12 @@
+{
+  "ID": "6F3B2A9C-1D74-4E58-9C21-8A5E7B4D0F63",
+  "ActionKeyword": "gs",
+  "Name": "Game Saves Manager",
+  "Description": "Browse installed games and open their save, config or install folders",
+  "Author": "Zeocadio",
+  "Version": "1.0.0",
+  "Language": "csharp",
+  "Website": "https://github.com/Zeocadio/Flow.Launcher.Plugin.GameSavesManager",
+  "IcoPath": "Images\\icon.png",
+  "ExecuteFileName": "Flow.Launcher.Plugin.GameSavesManager.dll"
+}
