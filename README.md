@@ -52,6 +52,27 @@ cache lifetimes. Flow Launcher → Settings → Plugins → Game Saves Manager.
 A [Raycast](https://raycast.com) version of this plugin exists for macOS and Windows. This one
 is an independent implementation for Flow Launcher, not a wrapper around it.
 
+## Credits
+
+This plugin knows nothing about games on its own. Everything it shows comes from the
+[**Ludusavi manifest**](https://github.com/mtkennerly/ludusavi-manifest) by
+[Matthew T. Kennerly](https://github.com/mtkennerly) — an open-source, community-maintained
+database of save and config locations for essentially every PC game, distributed under the
+MIT licence.
+
+The manifest is in turn compiled from [**PCGamingWiki**](https://www.pcgamingwiki.com), whose
+contributors are the people actually documenting where each game hides its saves. PCGamingWiki
+content is licensed [CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/).
+
+**If a game's paths are wrong or missing, fix it at the source** — edit the article on
+PCGamingWiki and the correction flows into the manifest, and from there into this plugin (and
+every other tool built on it) on the next refresh. Opening an issue here cannot fix the data.
+
+Built for [Flow Launcher](https://www.flowlauncher.com), which is itself open source.
+
 ## Licence
 
-MIT
+[MIT](LICENSE) — © 2026 Zeocadio.
+
+The bundled game database is not redistributed with this plugin; it is downloaded from the
+Ludusavi manifest repository at runtime and cached locally.
