@@ -54,6 +54,11 @@ that appeared to do nothing:
 - **Folders that do not exist yet.** A game that has never been launched has no save folder,
   which is normal, not an error. `OpenFolder` walks up to the nearest existing ancestor and
   opens that instead; `FolderResult` says so in the subtitle before the user presses Enter.
+- **Repeated rows.** `BuildEntries` groups by the directory Enter will actually open, not by
+  manifest path. The manifest commonly lists several files inside one folder — Crimson Desert
+  has three save entries in the same directory — and opening a file opens its parent, so
+  without grouping the same destination appears several times. `Disambiguate` then appends the
+  folder name to any titles that still collide.
 - **Refreshes.** `RunRefreshAsync` drives `API.ShowProgressBoxAsync`, with progress threaded
   from `HttpDownloadAsync` through indexing (0-60 download, 60-85 index, 85-100 detect and
   match). It is called directly from the result action so the dialog is created on the UI
@@ -111,7 +116,17 @@ disk — no network calls, no icon extraction of our own:
 | Epic | the `LaunchExecutable` from the .item manifest — Flow extracts the embedded icon itself |
 | Xbox | `AppxManifest.xml` → `VisualElements/@Square150x150Logo`, resolved through its `.scale-*` variants; `Properties/Logo` is only a 50x50 store logo |
 
-`installed-games-v2.json` carries a schema version in its name. Bump it whenever
+They also resolve `InstalledGame.LaunchTarget`, consumed by `GameLauncher`:
+| Store | Launch target |
+|---|---|
+| Steam | `steam://rungameid/<appid>` |
+| GOG | primary `FileTask` from `goggame-<id>.info` — runs without Galaxy |
+| Epic | `com.epicgames.launcher://apps/<AppName>?action=launch&silent=true` — keyed on `AppName`, not the `CatalogItemId` used for matching |
+| Xbox | `shell:appsFolder\<PackageFamilyName>!<AppId>`, family name derived from the package full name by keeping the first and last underscore-separated segments |
+
+`shell:` targets go through `explorer.exe`; ShellExecute does not understand them directly.
+
+`installed-games-v3.json` carries a schema version in its name. Bump it whenever
 `InstalledGame` gains a field, or existing caches will serve nulls for it until the TTL
 expires.
 

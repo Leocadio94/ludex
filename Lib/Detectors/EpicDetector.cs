@@ -60,13 +60,22 @@ public static class EpicDetector
                     if (File.Exists(exePath)) icon = exePath;
                 }
 
+                // The launcher URI keys off AppName, not the catalog id used for matching.
+                string? launch = null;
+                if (root.TryGetProperty("AppName", out var appNameEl) &&
+                    appNameEl.GetString() is { Length: > 0 } appName)
+                {
+                    launch = $"com.epicgames.launcher://apps/{appName}?action=launch&silent=true";
+                }
+
                 games.Add(new InstalledGame
                 {
                     Name = name,
                     Store = GameStore.Epic,
                     StoreGameId = id,
                     InstallPath = installPath,
-                    IconPath = icon
+                    IconPath = icon,
+                    LaunchTarget = launch
                 });
             }
             catch

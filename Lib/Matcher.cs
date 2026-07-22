@@ -108,6 +108,7 @@ public static class Matcher
                 StoreGameId = game.StoreGameId,
                 InstallPath = game.InstallPath,
                 IconPath = game.IconPath,
+                LaunchTarget = game.LaunchTarget,
                 SavePaths = Deduplicate(savePaths),
                 ConfigPaths = Deduplicate(configPaths)
             });

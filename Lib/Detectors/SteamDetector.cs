@@ -40,7 +40,8 @@ public static class SteamDetector
                     InstallPath = Path.Combine(library, "common", installDir),
                     // <root> for a Steam library is the folder that contains steamapps.
                     StoreRoot = Path.GetDirectoryName(library),
-                    IconPath = FindLibraryArt(root, appId)
+                    IconPath = FindLibraryArt(root, appId),
+                    LaunchTarget = $"steam://rungameid/{appId}"
                 });
             }
         }

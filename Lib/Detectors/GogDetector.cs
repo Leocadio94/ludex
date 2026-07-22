@@ -1,4 +1,5 @@
 using System.IO;
+using System.Text.Json;
 using Microsoft.Win32;
 
 namespace Flow.Launcher.Plugin.GameSavesManager.Lib.Detectors;
@@ -45,12 +46,55 @@ public static class GogDetector
                     Store = GameStore.Gog,
                     StoreGameId = string.IsNullOrEmpty(id) ? null : id,
                     InstallPath = path,
-                    IconPath = FindGogIcon(path)
+                    IconPath = FindGogIcon(path),
+                    LaunchTarget = FindPrimaryPlayTask(path)
                 });
             }
         }
 
         return games;
+    }
+
+    /// <summary>
+    /// goggame-&lt;productid&gt;.info lists the game's play tasks. Launching the primary
+    /// executable directly works whether or not GOG Galaxy is installed or running.
+    /// </summary>
+    private static string? FindPrimaryPlayTask(string installPath)
+    {
+        try
+        {
+            var info = Directory.Exists(installPath)
+                ? Directory.GetFiles(installPath, "goggame-*.info").FirstOrDefault()
+                : null;
+            if (info is null) return null;
+
+            using var doc = JsonDocument.Parse(File.ReadAllText(info));
+            if (!doc.RootElement.TryGetProperty("playTasks", out var tasks)) return null;
+
+            string? firstFileTask = null;
+
+            foreach (var task in tasks.EnumerateArray())
+            {
+                if (!task.TryGetProperty("type", out var type) || type.GetString() != "FileTask") continue;
+                if (!task.TryGetProperty("path", out var pathEl)) continue;
+                if (pathEl.GetString() is not { Length: > 0 } relative) continue;
+
+                var exe = Path.Combine(installPath, relative.Replace('/', '\\'));
+                if (!File.Exists(exe)) continue;
+
+                var isPrimary = task.TryGetProperty("isPrimary", out var primary) &&
+                                primary.ValueKind == JsonValueKind.True;
+                if (isPrimary) return exe;
+
+                firstFileTask ??= exe;
+            }
+
+            return firstFileTask;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     /// <summary>GOG installers drop a goggame-&lt;productid&gt;.ico next to the game.</summary>

@@ -78,7 +78,8 @@ public static class XboxDetector
                     Name = name,
                     Store = GameStore.Xbox,
                     InstallPath = packageRoot,
-                    IconPath = ResolveLogo(packageRoot)
+                    IconPath = ResolveLogo(packageRoot),
+                    LaunchTarget = BuildLaunchUri(subKeyName, packageRoot)
                 };
             }
             catch
@@ -87,6 +88,37 @@ public static class XboxDetector
             }
 
             if (game is not null) yield return game;
+        }
+    }
+
+    /// <summary>
+    /// Packaged apps are launched through the shell's app folder, which needs the package
+    /// family name and the application id. The family name is derived from the package full
+    /// name (the registry key) by dropping version, architecture and resource segments:
+    /// Microsoft.MinecraftUWP_1.26.3301.0_x64__8wekyb3d8bbwe → Microsoft.MinecraftUWP_8wekyb3d8bbwe
+    /// </summary>
+    private static string? BuildLaunchUri(string packageFullName, string packageRoot)
+    {
+        try
+        {
+            var parts = packageFullName.Split('_', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length < 2) return null;
+
+            var familyName = $"{parts[0]}_{parts[^1]}";
+
+            var manifest = Path.Combine(packageRoot, "AppxManifest.xml");
+            if (!File.Exists(manifest)) return null;
+
+            var appId = XDocument.Load(manifest).Root?
+                .Elements().FirstOrDefault(e => e.Name.LocalName == "Applications")?
+                .Elements().FirstOrDefault(e => e.Name.LocalName == "Application")?
+                .Attribute("Id")?.Value;
+
+            return string.IsNullOrEmpty(appId) ? null : $@"shell:appsFolder\{familyName}!{appId}";
+        }
+        catch
+        {
+            return null;
         }
     }
 

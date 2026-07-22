@@ -19,7 +19,7 @@ public sealed class GameDetector
         Directory.CreateDirectory(cacheDir);
         // The suffix is a schema version: bumping it invalidates caches written by an older
         // build whose InstalledGame shape differed, instead of serving stale null fields.
-        _cacheFile = Path.Combine(cacheDir, "installed-games-v2.json");
+        _cacheFile = Path.Combine(cacheDir, "installed-games-v3.json");
         _settings = settings;
         _logError = logError;
     }

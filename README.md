@@ -18,8 +18,13 @@ PCGamingWiki, in a form software can actually read.
 | `gs !refresh` | Re-download the game database |
 | `gs !all doom` | Search the whole database, including games you have not installed |
 
-Press <kbd>Enter</kbd> on a game to see its folders — save, config and install. Press
-<kbd>Enter</kbd> again to open one, or <kbd>Ctrl</kbd>+<kbd>O</kbd> to copy its path instead.
+Press <kbd>Enter</kbd> on a game to see what you can do with it — launch it, or open its save,
+config and install folders. Press <kbd>Enter</kbd> again to act, or <kbd>Ctrl</kbd>+<kbd>O</kbd>
+on a folder to copy its path instead.
+
+Launching goes through the store the game came from: Steam and the Epic launcher by protocol,
+the Xbox app through the shell, and GOG titles by running the executable directly, so they
+start whether or not GOG Galaxy is running.
 
 Games are listed with their own store artwork. If a save folder does not exist yet — normal
 for a game you have installed but never launched — the entry says so, and opening it takes you

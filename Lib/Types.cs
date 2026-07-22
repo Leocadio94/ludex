@@ -41,6 +41,12 @@ public sealed class InstalledGame
     /// during detection and cached, since it means touching the disk per game.
     /// </summary>
     public string? IconPath { get; set; }
+
+    /// <summary>
+    /// What to hand to the shell to start the game: a store URI (steam://, shell:appsFolder\)
+    /// or an executable path. Null when the store gives us no reliable way to launch it.
+    /// </summary>
+    public string? LaunchTarget { get; set; }
 }
 
 /// <summary>
@@ -99,6 +105,7 @@ public sealed class GameWithPaths
     public string? StoreGameId { get; set; }
     public string? InstallPath { get; set; }
     public string? IconPath { get; set; }
+    public string? LaunchTarget { get; set; }
 
     public List<ResolvedPath> SavePaths { get; set; } = new();
     public List<ResolvedPath> ConfigPaths { get; set; } = new();

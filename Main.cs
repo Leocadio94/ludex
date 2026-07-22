@@ -236,6 +236,11 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
             }
         };
 
+        var launch = LaunchResult(game, 950);
+        if (launch is not null &&
+            (filter.Length == 0 || _context.API.FuzzySearch(filter, launch.Title).Success))
+            results.Add(launch);
+
         var score = 900;
         foreach (var entry in BuildEntries(game))
         {
@@ -433,44 +438,114 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
 
     #region Folder entries
 
-    private sealed record FolderEntry(string Title, string Path, bool Exists, string Icon);
-
-    private static IEnumerable<FolderEntry> BuildEntries(GameWithPaths game)
+    private sealed class FolderEntry
     {
-        var emitted = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        public required string Title { get; set; }
 
-        foreach (var p in game.SavePaths)
+        /// <summary>The directory Enter will open.</summary>
+        public required string Path { get; init; }
+
+        public required bool Exists { get; init; }
+        public required string Icon { get; init; }
+
+        /// <summary>The manifest paths that resolved here — one folder can come from several.</summary>
+        public List<string> Sources { get; } = new();
+    }
+
+    /// <summary>
+    /// Builds the folder list for a game, grouped by the directory that will actually be
+    /// opened. The manifest often lists several files inside one folder (Crimson Desert has
+    /// three save entries in the same directory), and opening a file means opening its parent,
+    /// so without this the list shows the same destination several times over.
+    /// </summary>
+    private static List<FolderEntry> BuildEntries(GameWithPaths game)
+    {
+        var groups = new Dictionary<string, (PathTags Tags, string? Os, string? Store, List<string> Sources)>(
+            StringComparer.OrdinalIgnoreCase);
+
+        var distinct = game.SavePaths
+            .Concat(game.ConfigPaths)
+            .GroupBy(p => p.Path, StringComparer.OrdinalIgnoreCase)
+            .Select(g => g.First());
+
+        foreach (var p in distinct)
         {
-            if (!emitted.Add(p.Path)) continue;
-            yield return new FolderEntry(FolderTitle(p, PathTags.Save), p.Path, p.Exists,
-                p.Exists ? Icons.Folder : Icons.Missing);
+            var dir = TargetDirectory(p.Path);
+
+            if (groups.TryGetValue(dir, out var existing))
+            {
+                groups[dir] = (existing.Tags | p.Tags, existing.Os ?? p.Os, existing.Store ?? p.Store,
+                    existing.Sources);
+            }
+            else
+            {
+                groups[dir] = (p.Tags, p.Os, p.Store, new List<string>());
+            }
+
+            groups[dir].Sources.Add(p.Path);
         }
 
-        foreach (var p in game.ConfigPaths)
+        var entries = new List<FolderEntry>();
+
+        foreach (var (dir, group) in groups)
         {
-            if (!emitted.Add(p.Path)) continue;
-            yield return new FolderEntry(FolderTitle(p, PathTags.Config), p.Path, p.Exists,
-                p.Exists ? Icons.Config : Icons.Missing);
+            var exists = Directory.Exists(dir);
+            var entry = new FolderEntry
+            {
+                Title = FolderTitle(group.Tags, group.Os, group.Store),
+                Path = dir,
+                Exists = exists,
+                Icon = exists
+                    ? group.Tags == PathTags.Config ? Icons.Config : Icons.Folder
+                    : Icons.Missing
+            };
+
+            entry.Sources.AddRange(group.Sources);
+            entries.Add(entry);
         }
 
         if (!string.IsNullOrEmpty(game.InstallPath))
         {
             var exists = Directory.Exists(game.InstallPath);
-            yield return new FolderEntry("Open Install Folder", game.InstallPath, exists,
-                exists ? Icons.Install : Icons.Missing);
+            entries.Add(new FolderEntry
+            {
+                Title = "Open Install Folder",
+                Path = game.InstallPath,
+                Exists = exists,
+                Icon = exists ? Icons.Install : Icons.Missing
+            });
+        }
+
+        Disambiguate(entries);
+        return entries;
+    }
+
+    /// <summary>
+    /// Two folders can legitimately produce the same title — a per-account save directory and
+    /// the shared one above it, for instance. Append the folder name so the rows differ by
+    /// something other than a truncated path.
+    /// </summary>
+    private static void Disambiguate(List<FolderEntry> entries)
+    {
+        foreach (var collision in entries.GroupBy(e => e.Title).Where(g => g.Count() > 1))
+        {
+            foreach (var entry in collision)
+            {
+                var leaf = Path.GetFileName(entry.Path);
+                if (leaf.Length > 0) entry.Title = $"{entry.Title} — {leaf}";
+            }
         }
     }
 
-    private static string FolderTitle(ResolvedPath p, PathTags context)
+    private static string FolderTitle(PathTags tags, string? os, string? store)
     {
-        var hasBoth = p.Tags.HasFlag(PathTags.Save) && p.Tags.HasFlag(PathTags.Config);
-        var name = hasBoth
+        var name = tags.HasFlag(PathTags.Save) && tags.HasFlag(PathTags.Config)
             ? "Save & Config Folder"
-            : context == PathTags.Save ? "Save Folder" : "Config Folder";
+            : tags.HasFlag(PathTags.Save) ? "Save Folder" : "Config Folder";
 
         var parts = new List<string>();
-        if (p.Os is not null) parts.Add(Capitalize(p.Os));
-        if (p.Store is not null) parts.Add(Capitalize(p.Store));
+        if (os is not null) parts.Add(Capitalize(os));
+        if (store is not null) parts.Add(Capitalize(store));
 
         return parts.Count > 0 ? $"Open {name} ({string.Join(", ", parts)})" : $"Open {name}";
     }
@@ -489,15 +564,47 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
             ? entry.Path
             : $"{entry.Path}   —   not created yet, opens {fallback}";
 
+        var tooltip = entry.Sources.Count > 1
+            ? $"{entry.Path}\n\nFrom:\n{string.Join('\n', entry.Sources)}"
+            : entry.Path;
+
         return new Result
         {
             Title = entry.Title,
             SubTitle = subtitle,
-            SubTitleToolTip = entry.Path,
+            SubTitleToolTip = tooltip,
             IcoPath = entry.Icon,
             Score = score,
             ContextData = entry,
             Action = _ => OpenFolder(entry.Path)
+        };
+    }
+
+    /// <summary>Null when the store gave the detector no way to start the game.</summary>
+    private Result? LaunchResult(GameWithPaths game, int score)
+    {
+        if (game.LaunchTarget is not { Length: > 0 } target) return null;
+
+        return new Result
+        {
+            Title = "Launch Game",
+            SubTitle = GameLauncher.Describe(game.Store, target),
+            IcoPath = GameIcon(game),
+            Score = score,
+            Action = _ =>
+            {
+                try
+                {
+                    GameLauncher.Launch(target, game.InstallPath);
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    _context.API.LogException(nameof(Main), $"Failed to launch {game.Name}", e);
+                    _context.API.ShowMsgError("Could not launch the game", e.Message);
+                    return false;
+                }
+            }
         };
     }
 
@@ -570,6 +677,10 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
             case GameWithPaths game:
             {
                 var results = new List<Result>();
+
+                var launch = LaunchResult(game, 150);
+                if (launch is not null) results.Add(launch);
+
                 var score = 100;
                 foreach (var entry in BuildEntries(game)) results.Add(FolderResult(entry, score--));
                 if (results.Count == 0) results.Add(NoPathsResult(game));
