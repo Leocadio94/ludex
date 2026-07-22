@@ -44,11 +44,27 @@ public static class GogDetector
                     Name = name,
                     Store = GameStore.Gog,
                     StoreGameId = string.IsNullOrEmpty(id) ? null : id,
-                    InstallPath = path
+                    InstallPath = path,
+                    IconPath = FindGogIcon(path)
                 });
             }
         }
 
         return games;
+    }
+
+    /// <summary>GOG installers drop a goggame-&lt;productid&gt;.ico next to the game.</summary>
+    private static string? FindGogIcon(string installPath)
+    {
+        try
+        {
+            return Directory.Exists(installPath)
+                ? Directory.GetFiles(installPath, "goggame-*.ico").FirstOrDefault()
+                : null;
+        }
+        catch
+        {
+            return null;
+        }
     }
 }

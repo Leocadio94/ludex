@@ -48,6 +48,17 @@ Enter on a game rewrites the query to `gs >{slug} ` via `API.ChangeQuery` and re
 so the window stays open. Slugs come from `Matcher.MakeSlug` and are guaranteed unique and
 space-free.
 
+Two behaviours exist because the obvious implementation left the user staring at a launcher
+that appeared to do nothing:
+
+- **Folders that do not exist yet.** A game that has never been launched has no save folder,
+  which is normal, not an error. `OpenFolder` walks up to the nearest existing ancestor and
+  opens that instead; `FolderResult` says so in the subtitle before the user presses Enter.
+- **Refreshes.** `RunRefreshAsync` drives `API.ShowProgressBoxAsync`, with progress threaded
+  from `HttpDownloadAsync` through indexing (0-60 download, 60-85 index, 85-100 detect and
+  match). It is called directly from the result action so the dialog is created on the UI
+  thread, and the returned task is deliberately not awaited.
+
 ### Core library (`Lib/`)
 
 **`ManifestStore.cs`** — download → index → load.
@@ -90,6 +101,19 @@ dropped rather than failing the rest. Result cached to `installed-games.json`, 1
 Xbox is the one worth knowing about: the obvious implementation shells out to
 `Get-AppxPackage`, which takes tens of seconds. The registry path runs in well under one
 second and needs no Windows SDK reference.
+
+Each detector also resolves `InstalledGame.IconPath` from artwork the store already put on
+disk — no network calls, no icon extraction of our own:
+| Store | Icon source |
+|---|---|
+| Steam | `appcache\librarycache\<appid>\` — the client icon is stored under its content hash, so it is found by shape (40 hex chars), falling back to `logo.png` / `header.jpg` |
+| GOG | `goggame-<productid>.ico` in the install folder |
+| Epic | the `LaunchExecutable` from the .item manifest — Flow extracts the embedded icon itself |
+| Xbox | `AppxManifest.xml` → `VisualElements/@Square150x150Logo`, resolved through its `.scale-*` variants; `Properties/Logo` is only a 50x50 store logo |
+
+`installed-games-v2.json` carries a schema version in its name. Bump it whenever
+`InstalledGame` gains a field, or existing caches will serve nulls for it until the TTL
+expires.
 
 ### Injected dependencies
 

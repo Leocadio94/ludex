@@ -77,7 +77,8 @@ public static class XboxDetector
                 {
                     Name = name,
                     Store = GameStore.Xbox,
-                    InstallPath = packageRoot
+                    InstallPath = packageRoot,
+                    IconPath = ResolveLogo(packageRoot)
                 };
             }
             catch
@@ -86,6 +87,54 @@ public static class XboxDetector
             }
 
             if (game is not null) yield return game;
+        }
+    }
+
+    /// <summary>
+    /// The manifest's Logo element names a logical asset ("Assets\Logo.png"); on disk it
+    /// exists only as scaled variants ("Logo.scale-200.png"), so fall back to the largest
+    /// matching variant.
+    /// </summary>
+    private static string? ResolveLogo(string packageRoot)
+    {
+        try
+        {
+            var manifest = Path.Combine(packageRoot, "AppxManifest.xml");
+            if (!File.Exists(manifest)) return null;
+
+            var root = XDocument.Load(manifest).Root;
+
+            // Properties/Logo is the 50x50 store logo; the app tile is much better suited to
+            // a result row, so prefer it when the package declares one.
+            var logo = root?
+                .Elements().FirstOrDefault(e => e.Name.LocalName == "Applications")?
+                .Elements().FirstOrDefault(e => e.Name.LocalName == "Application")?
+                .Elements().FirstOrDefault(e => e.Name.LocalName == "VisualElements")?
+                .Attribute("Square150x150Logo")?.Value;
+
+            logo ??= root?
+                .Elements().FirstOrDefault(e => e.Name.LocalName == "Properties")?
+                .Elements().FirstOrDefault(e => e.Name.LocalName == "Logo")?
+                .Value;
+
+            if (string.IsNullOrEmpty(logo)) return null;
+
+            var full = Path.Combine(packageRoot, logo.Replace('/', '\\'));
+            if (File.Exists(full)) return full;
+
+            var dir = Path.GetDirectoryName(full);
+            if (dir is null || !Directory.Exists(dir)) return null;
+
+            var stem = Path.GetFileNameWithoutExtension(full);
+            var ext = Path.GetExtension(full);
+
+            return Directory.GetFiles(dir, $"{stem}.*{ext}")
+                .OrderByDescending(f => new FileInfo(f).Length)
+                .FirstOrDefault();
+        }
+        catch
+        {
+            return null;
         }
     }
 

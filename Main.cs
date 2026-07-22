@@ -36,7 +36,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
         _manifest = new ManifestStore(
             cacheDir,
             _settings,
-            (url, dest, token) => context.API.HttpDownloadAsync(url, dest, token: token),
+            (url, dest, report, token) => context.API.HttpDownloadAsync(url, dest, report, token),
             () => context.API.SaveSettingJsonStorage<Settings>());
 
         _detector = new GameDetector(
@@ -52,35 +52,45 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
 
     public Task ReloadDataAsync() => StartLoad(false, true);
 
-    private Task StartLoad(bool forceManifest, bool forceGames)
+    private Task StartLoad(bool forceManifest, bool forceGames, Action<double>? onProgress = null,
+        CancellationToken token = default)
     {
         lock (_gate)
         {
             if (_loading is { IsCompleted: false }) return _loading;
-            _loading = Task.Run(() => LoadCoreAsync(forceManifest, forceGames));
+            _loading = Task.Run(() => LoadCoreAsync(forceManifest, forceGames, onProgress, token), token);
             return _loading;
         }
     }
 
-    private async Task LoadCoreAsync(bool forceManifest, bool forceGames)
+    private async Task LoadCoreAsync(bool forceManifest, bool forceGames, Action<double>? onProgress,
+        CancellationToken token)
     {
         _ready = false;
         _error = null;
 
         try
         {
-            _index = await _manifest.LoadAsync(forceManifest, s => _status = s).ConfigureAwait(false);
+            _index = await _manifest.LoadAsync(forceManifest, s => _status = s, onProgress, token)
+                .ConfigureAwait(false);
 
             _status = "Detecting installed games...";
-            var installed = await _detector.DetectAsync(forceGames).ConfigureAwait(false);
+            onProgress?.Invoke(85);
+            var installed = await _detector.DetectAsync(forceGames, token).ConfigureAwait(false);
 
             _status = "Matching against the database...";
+            onProgress?.Invoke(95);
             var games = Matcher.Match(installed, _index, _settings.ShowUnmatchedGames);
 
             _games = games;
             _bySlug = games.ToDictionary(g => g.Slug, StringComparer.Ordinal);
             _ready = true;
             _status = $"{games.Count} games";
+            onProgress?.Invoke(100);
+        }
+        catch (OperationCanceledException)
+        {
+            _status = "Cancelled";
         }
         catch (Exception e)
         {
@@ -185,7 +195,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
             Title = game.Name,
             SubTitle = subtitle,
             TitleHighlightData = highlight,
-            IcoPath = game.Matched ? Icons.App : Icons.Missing,
+            IcoPath = GameIcon(game),
             Score = score,
             ContextData = game,
             AutoCompleteText = $"{ActionKeyword(query)} {game.Name}",
@@ -267,9 +277,9 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
                 SubTitle = $"{keyword} !games  ·  re-scan Steam, GOG, Epic and Xbox",
                 IcoPath = Icons.Refresh,
                 Score = 3,
-                Action = _ =>
+                Action = ctx =>
                 {
-                    RunRefresh(false, true, "Re-detecting installed games...");
+                    _ = RunRefreshAsync(false, true, "Re-detecting installed games...");
                     return false;
                 }
             },
@@ -279,9 +289,9 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
                 SubTitle = $"{keyword} !refresh  ·  re-download the Ludusavi manifest (~16 MB)",
                 IcoPath = Icons.Download,
                 Score = 2,
-                Action = _ =>
+                Action = ctx =>
                 {
-                    RunRefresh(true, true, "Downloading the game database...");
+                    _ = RunRefreshAsync(true, true, "Downloading the game database...");
                     return false;
                 }
             },
@@ -300,20 +310,39 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
         };
     }
 
-    private void RunRefresh(bool manifest, bool games, string message)
+    /// <summary>
+    /// Runs a refresh behind Flow's progress dialog. Called straight from a result action so
+    /// the dialog is created on the UI thread; the returned task is intentionally not awaited.
+    /// </summary>
+    private async Task RunRefreshAsync(bool manifest, bool games, string caption)
     {
         _ready = false;
-        _status = message;
-        _context.API.ShowMsg("Game Saves Manager", message, Icons.App);
+        _status = caption;
 
-        var task = StartLoad(manifest, games);
-        _ = task.ContinueWith(_ =>
+        using var cts = new CancellationTokenSource();
+
+        try
         {
-            _context.API.ShowMsg(
-                "Game Saves Manager",
-                _error is null ? $"Ready — {_games.Count} games" : $"Failed: {_error}",
-                Icons.App);
-        }, TaskScheduler.Default);
+            await _context.API.ShowProgressBoxAsync(
+                caption,
+                async report =>
+                {
+                    report(0);
+                    await StartLoad(manifest, games, report, cts.Token).ConfigureAwait(false);
+                },
+                cts.Cancel);
+        }
+        catch (Exception e)
+        {
+            _context.API.LogException(nameof(Main), "Refresh failed", e);
+        }
+
+        if (cts.IsCancellationRequested) return;
+
+        _context.API.ShowMsg(
+            "Game Saves Manager",
+            _error is null ? $"Ready — {_games.Count} games" : $"Failed: {_error}",
+            Icons.App);
     }
 
     /// <summary>
@@ -449,16 +478,28 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
     private static string Capitalize(string s) =>
         s.Length == 0 ? s : char.ToUpperInvariant(s[0]) + s[1..];
 
-    private Result FolderResult(FolderEntry entry, int score) => new()
+    private Result FolderResult(FolderEntry entry, int score)
     {
-        Title = entry.Title,
-        SubTitle = entry.Exists ? entry.Path : $"{entry.Path}   (not created yet)",
-        SubTitleToolTip = entry.Path,
-        IcoPath = entry.Icon,
-        Score = score,
-        ContextData = entry,
-        Action = _ => OpenFolder(entry.Path)
-    };
+        var target = TargetDirectory(entry.Path);
+        var fallback = Directory.Exists(target) ? null : NearestExistingAncestor(target);
+
+        // Say up front what Enter will actually do, rather than letting the user press it and
+        // watch nothing happen.
+        var subtitle = fallback is null
+            ? entry.Path
+            : $"{entry.Path}   —   not created yet, opens {fallback}";
+
+        return new Result
+        {
+            Title = entry.Title,
+            SubTitle = subtitle,
+            SubTitleToolTip = entry.Path,
+            IcoPath = entry.Icon,
+            Score = score,
+            ContextData = entry,
+            Action = _ => OpenFolder(entry.Path)
+        };
+    }
 
     private Result NoPathsResult(GameWithPaths game) => new()
     {
@@ -473,14 +514,38 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
     {
         var target = TargetDirectory(path);
 
-        if (!Directory.Exists(target))
+        if (Directory.Exists(target))
+        {
+            _context.API.OpenDirectory(target);
+            return true;
+        }
+
+        // A save folder that does not exist yet is the normal case for a game that has never
+        // been launched. Opening the closest existing parent is more useful than an error,
+        // and it puts the user where the folder will appear.
+        var ancestor = NearestExistingAncestor(target);
+        if (ancestor is null)
         {
             _context.API.ShowMsgError("Folder does not exist", target);
             return false;
         }
 
-        _context.API.OpenDirectory(target);
+        _context.API.OpenDirectory(ancestor);
+        _context.API.ShowMsg("Folder not created yet", $"Opened {ancestor} instead.", Icons.Missing);
         return true;
+    }
+
+    private static string? NearestExistingAncestor(string path)
+    {
+        var current = Path.GetDirectoryName(path);
+
+        while (!string.IsNullOrEmpty(current))
+        {
+            if (Directory.Exists(current)) return current;
+            current = Path.GetDirectoryName(current);
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -551,6 +616,13 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
         string.IsNullOrEmpty(query.ActionKeyword) || query.ActionKeyword == Query.GlobalPluginWildcardSign
             ? _context.CurrentPluginMetadata.ActionKeyword
             : query.ActionKeyword;
+
+    /// <summary>
+    /// Store artwork when the detector found any, otherwise the plugin icon — or the
+    /// question mark when the game has no manifest entry at all.
+    /// </summary>
+    private static string GameIcon(GameWithPaths game) =>
+        game.IconPath is { Length: > 0 } icon ? icon : game.Matched ? Icons.App : Icons.Missing;
 
     private static string StoreLabel(GameStore store) => store switch
     {

@@ -17,7 +17,9 @@ public sealed class GameDetector
     public GameDetector(string cacheDir, Settings settings, Action<string, Exception> logError)
     {
         Directory.CreateDirectory(cacheDir);
-        _cacheFile = Path.Combine(cacheDir, "installed-games.json");
+        // The suffix is a schema version: bumping it invalidates caches written by an older
+        // build whose InstalledGame shape differed, instead of serving stale null fields.
+        _cacheFile = Path.Combine(cacheDir, "installed-games-v2.json");
         _settings = settings;
         _logError = logError;
     }

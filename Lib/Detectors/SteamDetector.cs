@@ -39,12 +39,46 @@ public static class SteamDetector
                     StoreGameId = appId,
                     InstallPath = Path.Combine(library, "common", installDir),
                     // <root> for a Steam library is the folder that contains steamapps.
-                    StoreRoot = Path.GetDirectoryName(library)
+                    StoreRoot = Path.GetDirectoryName(library),
+                    IconPath = FindLibraryArt(root, appId)
                 });
             }
         }
 
         return games;
+    }
+
+    /// <summary>
+    /// Steam caches library artwork per app under appcache\librarycache\&lt;appid&gt;. The
+    /// client icon is stored under its content hash, so it is identified by shape (40 hex
+    /// characters) rather than by name; the logo and header are wide and only used as
+    /// fallbacks.
+    /// </summary>
+    private static string? FindLibraryArt(string steamRoot, string appId)
+    {
+        var dir = Path.Combine(steamRoot, "appcache", "librarycache", appId);
+        if (!Directory.Exists(dir)) return null;
+
+        try
+        {
+            foreach (var file in Directory.GetFiles(dir, "*.jpg"))
+            {
+                var name = Path.GetFileNameWithoutExtension(file);
+                if (name.Length == 40 && name.All(Uri.IsHexDigit)) return file;
+            }
+
+            foreach (var fallback in new[] { "logo.png", "header.jpg" })
+            {
+                var path = Path.Combine(dir, fallback);
+                if (File.Exists(path)) return path;
+            }
+        }
+        catch
+        {
+            // Unreadable cache directory — fall back to the generic icon.
+        }
+
+        return null;
     }
 
     private static string? GetSteamRoot()

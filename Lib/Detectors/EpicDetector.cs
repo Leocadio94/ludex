@@ -50,12 +50,23 @@ public static class EpicDetector
                     ? catalogEl.GetString()
                     : root.TryGetProperty("AppName", out var appEl) ? appEl.GetString() : null;
 
+                // Flow's image loader extracts the embedded icon from an .exe, so pointing
+                // at the game's launch executable is enough.
+                string? icon = null;
+                if (root.TryGetProperty("LaunchExecutable", out var exeEl) &&
+                    exeEl.GetString() is { Length: > 0 } exe)
+                {
+                    var exePath = Path.Combine(installPath, exe);
+                    if (File.Exists(exePath)) icon = exePath;
+                }
+
                 games.Add(new InstalledGame
                 {
                     Name = name,
                     Store = GameStore.Epic,
                     StoreGameId = id,
-                    InstallPath = installPath
+                    InstallPath = installPath,
+                    IconPath = icon
                 });
             }
             catch

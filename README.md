@@ -21,6 +21,10 @@ PCGamingWiki, in a form software can actually read.
 Press <kbd>Enter</kbd> on a game to see its folders — save, config and install. Press
 <kbd>Enter</kbd> again to open one, or <kbd>Ctrl</kbd>+<kbd>O</kbd> to copy its path instead.
 
+Games are listed with their own store artwork. If a save folder does not exist yet — normal
+for a game you have installed but never launched — the entry says so, and opening it takes you
+to the closest folder that does exist, which is where it will appear.
+
 Stores detected: **Steam**, **GOG**, **Epic Games**, **Xbox / Game Pass**.
 
 Games that exist in your library but not in the database are still listed, with their install

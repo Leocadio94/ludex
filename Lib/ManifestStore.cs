@@ -20,15 +20,15 @@ public sealed class ManifestStore
     private readonly string _manifestFile;
     private readonly string _indexFile;
     private readonly Settings _settings;
-    private readonly Func<string, string, CancellationToken, Task> _download;
+    private readonly Func<string, string, Action<double>?, CancellationToken, Task> _download;
     private readonly Action _persistSettings;
 
-    /// <param name="download">url, destination, token. Injected so the plugin can use Flow's
-    /// HttpDownloadAsync (proxy aware) while tests can use a plain HttpClient.</param>
+    /// <param name="download">url, destination, progress 0-100, token. Injected so the plugin
+    /// can use Flow's HttpDownloadAsync (proxy aware) while tests use a plain HttpClient.</param>
     public ManifestStore(
         string cacheDir,
         Settings settings,
-        Func<string, string, CancellationToken, Task> download,
+        Func<string, string, Action<double>?, CancellationToken, Task> download,
         Action persistSettings)
     {
         Directory.CreateDirectory(cacheDir);
@@ -47,9 +47,11 @@ public sealed class ManifestStore
     private bool IsFresh() =>
         DateTime.UtcNow - LastUpdatedUtc < TimeSpan.FromDays(_settings.ManifestTtlDays);
 
+    /// <param name="onProgress">0-100 across download and indexing.</param>
     public async Task<Dictionary<string, IndexedGame>> LoadAsync(
         bool force,
         Action<string>? onStatus = null,
+        Action<double>? onProgress = null,
         CancellationToken token = default)
     {
         if (!force && IsFresh() && File.Exists(_indexFile))
@@ -61,11 +63,21 @@ public sealed class ManifestStore
         if (force || !File.Exists(_manifestFile) || !IsFresh())
         {
             onStatus?.Invoke("Downloading game database...");
-            await _download(ManifestUrl, _manifestFile, token).ConfigureAwait(false);
+
+            // Flow's HttpDownloadAsync refuses to write over an existing file, so download
+            // beside it and swap. A failed download also leaves the old manifest intact.
+            var tempFile = _manifestFile + ".tmp";
+            if (File.Exists(tempFile)) File.Delete(tempFile);
+
+            await _download(ManifestUrl, tempFile, p => onProgress?.Invoke(p * 0.6), token)
+                .ConfigureAwait(false);
+
+            File.Move(tempFile, _manifestFile, overwrite: true);
         }
 
+        onProgress?.Invoke(60);
         onStatus?.Invoke("Indexing game database...");
-        var count = await Task.Run(() => BuildIndex(onStatus, token), token).ConfigureAwait(false);
+        var count = await Task.Run(() => BuildIndex(onStatus, onProgress, token), token).ConfigureAwait(false);
         onStatus?.Invoke($"Indexed {count:N0} games");
 
         _settings.ManifestUpdatedUtcTicks = DateTime.UtcNow.Ticks;
@@ -84,8 +96,12 @@ public sealed class ManifestStore
         return index ?? new Dictionary<string, IndexedGame>();
     }
 
-    private int BuildIndex(Action<string>? onStatus, CancellationToken token)
+    private int BuildIndex(Action<string>? onStatus, Action<double>? onProgress, CancellationToken token)
     {
+        // The manifest has ~53k entries; an approximate denominator is enough to keep the
+        // progress bar moving smoothly and is clamped so it never overshoots.
+        const int ApproximateEntryCount = 53000;
+
         var tempFile = _indexFile + ".tmp";
         var written = 0;
 
@@ -117,6 +133,7 @@ public sealed class ManifestStore
                 if (seen % 2000 == 0)
                 {
                     onStatus?.Invoke($"Indexing game database... ({seen:N0} games)");
+                    onProgress?.Invoke(60 + Math.Min(25, 25.0 * seen / ApproximateEntryCount));
                     writer.Flush();
                 }
 

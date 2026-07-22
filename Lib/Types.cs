@@ -35,6 +35,12 @@ public sealed class InstalledGame
     /// to the install directory's parent.
     /// </summary>
     public string? StoreRoot { get; set; }
+
+    /// <summary>
+    /// Store-provided artwork or an executable Flow can extract an icon from. Resolved once
+    /// during detection and cached, since it means touching the disk per game.
+    /// </summary>
+    public string? IconPath { get; set; }
 }
 
 /// <summary>
@@ -92,6 +98,7 @@ public sealed class GameWithPaths
     public GameStore Store { get; set; }
     public string? StoreGameId { get; set; }
     public string? InstallPath { get; set; }
+    public string? IconPath { get; set; }
 
     public List<ResolvedPath> SavePaths { get; set; } = new();
     public List<ResolvedPath> ConfigPaths { get; set; } = new();
