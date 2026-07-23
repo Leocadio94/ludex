@@ -149,37 +149,47 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
     {
         var results = new List<Result>();
 
-        foreach (var game in _games)
+        if (search.Length > 0)
         {
-            var score = 100;
-
-            if (search.Length > 0)
+            foreach (var game in _games)
             {
                 var match = _context.API.FuzzySearch(search, game.Name);
                 if (!match.Success && !game.DetectedName.Equals(game.Name, StringComparison.OrdinalIgnoreCase))
                     match = _context.API.FuzzySearch(search, game.DetectedName);
                 if (!match.Success) continue;
 
-                score = match.Score;
-                results.Add(GameResult(query, game, score, match.MatchData));
-                continue;
+                results.Add(GameResult(query, game, match.Score, match.MatchData, forceOrder: false));
             }
 
-            results.Add(GameResult(query, game, score, null));
+            return results
+                .OrderByDescending(r => r.Score)
+                .ThenBy(r => r.Title, StringComparer.OrdinalIgnoreCase)
+                .Take(_settings.MaxResults)
+                .ToList();
         }
 
-        results = results
-            .OrderByDescending(r => r.Score)
-            .ThenBy(r => r.Title, StringComparer.OrdinalIgnoreCase)
-            .Take(_settings.MaxResults)
-            .ToList();
+        // Empty query: the full installed list. In Alphabetical mode every game gets a
+        // strictly descending score by A-Z position and opts out of Flow's usage bump, so the
+        // order is fixed. In Usage mode (default) every game shares one score and keeps the
+        // bump, letting Flow float the games you open most to the top.
+        var alphabetical = _settings.DefaultSort == GameSort.Alphabetical;
+        var ordered = alphabetical
+            ? _games.OrderBy(g => g.Name, StringComparer.OrdinalIgnoreCase)
+            : _games.AsEnumerable();
 
-        if (search.Length == 0) results.AddRange(CommandHints(query));
+        var rank = _games.Count;
+        foreach (var game in ordered.Take(_settings.MaxResults))
+        {
+            var score = alphabetical ? rank-- : 100;
+            results.Add(GameResult(query, game, score, null, forceOrder: alphabetical));
+        }
 
+        results.AddRange(CommandHints(query));
         return results;
     }
 
-    private Result GameResult(Query query, GameWithPaths game, int score, IList<int>? highlight)
+    private Result GameResult(Query query, GameWithPaths game, int score, IList<int>? highlight,
+        bool forceOrder)
     {
         var counts = new List<string>();
         if (game.SavePaths.Count > 0) counts.Add($"{game.SavePaths.Count} save{(game.SavePaths.Count > 1 ? "s" : "")}");
@@ -197,6 +207,9 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
             TitleHighlightData = highlight,
             IcoPath = GameIcon(game),
             Score = score,
+            // In Alphabetical mode the score already encodes the order, so keep Flow's usage
+            // history from re-sorting it.
+            AddSelectedCount = !forceOrder,
             ContextData = game,
             AutoCompleteText = $"{ActionKeyword(query)} {game.Name}",
             Action = _ =>

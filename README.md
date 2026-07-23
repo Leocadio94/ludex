@@ -53,8 +53,9 @@ everything is served from memory; the database refreshes itself every 7 days.
 
 ## Settings
 
-Which stores to scan, whether to show games missing from the database, result limit, and both
-cache lifetimes. Flow Launcher → Settings → Plugins → Game Saves Manager.
+Which stores to scan, the default order for the `gs` list (most-used-first or strictly
+alphabetical), whether to show games missing from the database, result limit, and both cache
+lifetimes. Flow Launcher → Settings → Plugins → Game Saves Manager.
 
 ## Related
 

@@ -48,8 +48,15 @@ Enter on a game rewrites the query to `gs >{slug} ` via `API.ChangeQuery` and re
 so the window stays open. Slugs come from `Matcher.MakeSlug` and are guaranteed unique and
 space-free.
 
-Two behaviours exist because the obvious implementation left the user staring at a launcher
-that appeared to do nothing:
+The empty-query list has two orderings, chosen by `Settings.DefaultSort`. **Usage** (default)
+gives every game the same score and leaves `Result.AddSelectedCount` on, so Flow's own usage
+history floats frequently-opened games up. **Alphabetical** assigns strictly descending scores
+by A-Z position and sets `AddSelectedCount = false`, otherwise Flow re-sorts equal scores by
+usage and the alphabetical order is lost. Searching (`gs <text>`) always ranks by fuzzy score
+regardless of the setting.
+
+Two more behaviours exist because the obvious implementation left the user staring at a
+launcher that appeared to do nothing:
 
 - **Folders that do not exist yet.** A game that has never been launched has no save folder,
   which is normal, not an error. `OpenFolder` walks up to the nearest existing ancestor and
