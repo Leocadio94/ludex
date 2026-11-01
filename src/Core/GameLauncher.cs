@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.IO;
 
-namespace Flow.Launcher.Plugin.GameSavesManager.Lib;
+namespace Ludex.Core;
 
 /// <summary>
 /// Starts a game from whatever handle its store gave us — a protocol URI for Steam and Epic,

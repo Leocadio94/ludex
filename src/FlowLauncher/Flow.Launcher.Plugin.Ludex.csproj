@@ -3,18 +3,19 @@
   <PropertyGroup>
     <TargetFramework>net9.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
-    <Nullable>enable</Nullable>
-    <LangVersion>latest</LangVersion>
-    <ImplicitUsings>enable</ImplicitUsings>
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <RootNamespace>Flow.Launcher.Plugin.GameSavesManager</RootNamespace>
-    <AssemblyName>Flow.Launcher.Plugin.GameSavesManager</AssemblyName>
+    <RootNamespace>Flow.Launcher.Plugin.Ludex</RootNamespace>
+    <AssemblyName>Flow.Launcher.Plugin.Ludex</AssemblyName>
     <Version>1.0.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Flow.Launcher.Plugin" Version="5.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Ludex.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Flow.Launcher.Plugin.GameSavesManager.Lib.Detectors;
+namespace Ludex.Core.Detectors;
 
 /// <summary>
 /// Minimal reader for Valve Data Format (.acf / .vdf). Keys are lowercased; values are

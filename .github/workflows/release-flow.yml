@@ -1,9 +1,9 @@
-name: Release
+name: Release Flow Launcher plugin
 
 on:
   push:
     tags:
-      - 'v*'
+      - 'flow-v*'
   workflow_dispatch:
 
 jobs:
@@ -21,18 +21,18 @@ jobs:
         id: meta
         shell: pwsh
         run: |
-          $version = (Get-Content plugin.json | ConvertFrom-Json).Version
+          $version = (Get-Content src/FlowLauncher/plugin.json | ConvertFrom-Json).Version
           "version=$version" >> $env:GITHUB_OUTPUT
 
       - name: Publish
-        run: dotnet publish Flow.Launcher.Plugin.GameSavesManager.csproj -c Release -o publish
+        run: dotnet publish src/FlowLauncher/Flow.Launcher.Plugin.Ludex.csproj -c Release -o publish
 
       - name: Package
         shell: pwsh
         run: |
-          Compress-Archive -Path publish\* -DestinationPath "Flow.Launcher.Plugin.GameSavesManager-${{ steps.meta.outputs.version }}.zip"
+          Compress-Archive -Path publish\* -DestinationPath "Flow.Launcher.Plugin.Ludex-${{ steps.meta.outputs.version }}.zip"
 
       - uses: softprops/action-gh-release@v2
         with:
-          files: Flow.Launcher.Plugin.GameSavesManager-*.zip
+          files: Flow.Launcher.Plugin.Ludex-*.zip
           generate_release_notes: true

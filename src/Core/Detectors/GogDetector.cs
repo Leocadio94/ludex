@@ -2,7 +2,7 @@ using System.IO;
 using System.Text.Json;
 using Microsoft.Win32;
 
-namespace Flow.Launcher.Plugin.GameSavesManager.Lib.Detectors;
+namespace Ludex.Core.Detectors;
 
 /// <summary>
 /// GOG Galaxy registers every installed game under HKLM. Reading the registry directly

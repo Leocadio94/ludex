@@ -1,8 +1,8 @@
 using System.IO;
 using System.Windows.Controls;
-using Flow.Launcher.Plugin.GameSavesManager.Lib;
+using Ludex.Core;
 
-namespace Flow.Launcher.Plugin.GameSavesManager;
+namespace Flow.Launcher.Plugin.Ludex;
 
 public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadable
 {
@@ -133,7 +133,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
             return Single("Failed to load game data", _error, Icons.Missing, _ =>
             {
                 StartLoad(true, true);
-                _context.API.ShowMsg("Game Saves Manager", "Retrying...");
+                _context.API.ShowMsg("Ludex", "Retrying...");
                 return false;
             });
         }
@@ -358,7 +358,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
         if (cts.IsCancellationRequested) return;
 
         _context.API.ShowMsg(
-            "Game Saves Manager",
+            "Ludex",
             _error is null ? $"Ready — {_games.Count} games" : $"Failed: {_error}",
             Icons.App);
     }

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Flow.Launcher.Plugin.GameSavesManager.Lib;
+namespace Ludex.Core;
 
 public enum GameStore
 {

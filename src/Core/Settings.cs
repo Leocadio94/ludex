@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Flow.Launcher.Plugin.GameSavesManager;
+namespace Ludex.Core;
 
 public enum GameSort
 {
@@ -13,7 +13,7 @@ public enum GameSort
 
 public sealed class Settings
 {
-    [JsonConverter(typeof(JsonStringEnumConverter))]
+    [JsonConverter(typeof(JsonStringEnumConverter<GameSort>))]
     public GameSort DefaultSort { get; set; } = GameSort.Usage;
 
     public int ManifestTtlDays { get; set; } = 7;

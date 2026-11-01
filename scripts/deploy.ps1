@@ -8,9 +8,11 @@ param(
 $ErrorActionPreference = 'Stop'
 
 $root = Resolve-Path (Join-Path $PSScriptRoot '..')
-$project = Join-Path $root 'Flow.Launcher.Plugin.GameSavesManager.csproj'
+$project = Join-Path $root 'src\FlowLauncher\Flow.Launcher.Plugin.Ludex.csproj'
 $publish = Join-Path $root 'publish'
-$target = Join-Path $env:APPDATA 'FlowLauncher\Plugins\Flow.Launcher.Plugin.GameSavesManager'
+$pluginsDir = Join-Path $env:APPDATA 'FlowLauncher\Plugins'
+$target = Join-Path $pluginsDir 'Flow.Launcher.Plugin.Ludex'
+$legacyTarget = Join-Path $pluginsDir 'Flow.Launcher.Plugin.GameSavesManager'
 
 $wasRunning = $false
 $flow = Get-Process Flow.Launcher -ErrorAction SilentlyContinue
@@ -27,6 +29,8 @@ dotnet publish $project -c Release -o $publish | Out-Null
 if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed with exit code $LASTEXITCODE" }
 
 Write-Host "Installing to $target"
+# Same plugin ID as the pre-rename install: leaving it would load the plugin twice.
+if (Test-Path $legacyTarget) { Remove-Item $legacyTarget -Recurse -Force }
 if (Test-Path $target) { Remove-Item $target -Recurse -Force }
 New-Item -ItemType Directory -Force -Path $target | Out-Null
 Copy-Item "$publish\*" $target -Recurse -Force

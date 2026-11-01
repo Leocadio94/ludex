@@ -1,7 +1,7 @@
 using System.IO;
 using System.Text.Json;
 
-namespace Flow.Launcher.Plugin.GameSavesManager.Lib.Detectors;
+namespace Ludex.Core.Detectors;
 
 /// <summary>
 /// The Epic Games Launcher writes one JSON manifest per installed game into ProgramData.

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Flow.Launcher.Plugin.GameSavesManager.Lib;
+namespace Ludex.Core;
 
 /// <summary>
 /// Source-generated serialization for the two files this plugin writes. Reflection-based

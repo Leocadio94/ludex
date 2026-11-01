@@ -1,8 +1,8 @@
 using System.IO;
 using System.Text.Json;
-using Flow.Launcher.Plugin.GameSavesManager.Lib.Detectors;
+using Ludex.Core.Detectors;
 
-namespace Flow.Launcher.Plugin.GameSavesManager.Lib;
+namespace Ludex.Core;
 
 /// <summary>
 /// Runs every enabled store detector in parallel and caches the result. A store that

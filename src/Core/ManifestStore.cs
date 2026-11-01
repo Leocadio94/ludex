@@ -1,7 +1,7 @@
 using System.IO;
 using System.Text.Json;
 
-namespace Flow.Launcher.Plugin.GameSavesManager.Lib;
+namespace Ludex.Core;
 
 /// <summary>
 /// Downloads the Ludusavi manifest and turns it into a compact on-disk index.

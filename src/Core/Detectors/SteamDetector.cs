@@ -1,7 +1,7 @@
 using System.IO;
 using Microsoft.Win32;
 
-namespace Flow.Launcher.Plugin.GameSavesManager.Lib.Detectors;
+namespace Ludex.Core.Detectors;
 
 /// <summary>
 /// Reads Steam's own metadata: the install root from the registry, the library list from

@@ -4,7 +4,7 @@
 
 Add-Type -AssemblyName System.Drawing
 
-$outDir = Join-Path $PSScriptRoot '..\Images'
+$outDir = Join-Path $PSScriptRoot '..\src\FlowLauncher\Images'
 New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 
 $icons = @(

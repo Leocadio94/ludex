@@ -2,7 +2,7 @@ using System.IO;
 using System.Xml.Linq;
 using Microsoft.Win32;
 
-namespace Flow.Launcher.Plugin.GameSavesManager.Lib.Detectors;
+namespace Ludex.Core.Detectors;
 
 /// <summary>
 /// Xbox / Game Pass detection from two cheap sources, merged by name:

@@ -1,7 +1,7 @@
 using System.IO;
 using System.Text;
 
-namespace Flow.Launcher.Plugin.GameSavesManager.Lib;
+namespace Ludex.Core;
 
 /// <summary>
 /// Joins detected games to manifest entries and resolves their path templates.

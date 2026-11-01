@@ -1,7 +1,8 @@
 using System.Windows;
 using System.Windows.Controls;
+using Ludex.Core;
 
-namespace Flow.Launcher.Plugin.GameSavesManager;
+namespace Flow.Launcher.Plugin.Ludex;
 
 /// <summary>
 /// Settings UI, built in code rather than XAML so the plugin has no compiled resources to
@@ -27,7 +28,7 @@ public sealed class SettingsPanel : UserControl
 
         stack.Children.Add(Header("Display"));
         stack.Children.Add(Choice(
-            "Default order for \"gs\"",
+            "Default order for \"lx\"",
             new[]
             {
                 ("Most used first", GameSort.Usage),
@@ -49,7 +50,7 @@ public sealed class SettingsPanel : UserControl
 
         stack.Children.Add(new TextBlock
         {
-            Text = "Use \"gs !refresh\" and \"gs !games\" to refresh immediately.",
+            Text = "Use \"lx !refresh\" and \"lx !games\" to refresh immediately.",
             Opacity = 0.7,
             Margin = new Thickness(0, 12, 0, 0),
             TextWrapping = TextWrapping.Wrap
