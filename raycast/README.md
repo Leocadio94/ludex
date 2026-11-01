@@ -1,6 +1,6 @@
-# Game Saves Manager
+# Ludex for Raycast
 
-A [Raycast](https://raycast.com) extension to browse your installed games and quickly open their save or config folders. Powered by the [Ludusavi Manifest](https://github.com/mtkennerly/ludusavi-manifest) — a community-maintained database of save locations for ~19,000 games.
+The Raycast version of [Ludex](../README.md): browse your installed games and quickly open their save or config folders. Unlike the Flow Launcher and Command Palette versions, this one is TypeScript and shares no code with the C# core. Powered by the [Ludusavi Manifest](https://github.com/mtkennerly/ludusavi-manifest) — a community-maintained database of save locations for ~19,000 games.
 
 ## Features
 

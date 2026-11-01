@@ -1,8 +1,8 @@
 {
   "$schema": "https://www.raycast.com/schemas/extension.json",
-  "name": "game-saves-manager",
-  "title": "Game Saves Manager",
-  "description": "Browse installed games and open their save/config folders",
+  "name": "ludex",
+  "title": "Ludex",
+  "description": "Browse installed games and open their save, config or install folders",
   "icon": "extension-icon.png",
   "license": "MIT",
   "commands": [
@@ -15,7 +15,7 @@
     {
       "name": "search-games",
       "title": "Search Games",
-      "description": "Search all games in the save manager database",
+      "description": "Search all games in the Ludusavi manifest",
       "mode": "view"
     },
     {
