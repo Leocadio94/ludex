@@ -1,4 +1,4 @@
-# Game Saves Manager — Flow Launcher plugin
+# Ludex for Flow Launcher
 
 Every PC game hides its saves somewhere different: `AppData\Roaming`, `AppData\LocalLow`,
 `Documents\My Games`, the Steam Cloud folder, or right next to the executable. This plugin
@@ -15,11 +15,11 @@ Stores detected: **Steam**, **GOG**, **Epic Games**, **Xbox / Game Pass**.
 
 | Query | What it does |
 |---|---|
-| `gs` | List every installed game |
-| `gs witcher` | Filter the installed games by name |
-| `gs !games` | Re-scan the stores for newly installed games |
-| `gs !refresh` | Re-download and re-index the game database |
-| `gs !all doom` | Search the whole database, including games you have not installed |
+| `lx` | List every installed game |
+| `lx witcher` | Filter the installed games by name |
+| `lx !games` | Re-scan the stores for newly installed games |
+| `lx !refresh` | Re-download and re-index the game database |
+| `lx !all doom` | Search the whole database, including games you have not installed |
 
 Press <kbd>Enter</kbd> on a game to open its actions — launch it, or open its save, config and
 install folders. Press <kbd>Enter</kbd> again to act. On a folder, <kbd>Ctrl</kbd>+<kbd>O</kbd>
@@ -46,24 +46,24 @@ opens the context menu to copy its path instead of opening it.
 
 ## Settings
 
-Flow Launcher → Settings → Plugins → Game Saves Manager.
+Flow Launcher → Settings → Plugins → Ludex.
 
 | Setting | Default | What it does |
 |---|---|---|
 | **Stores to scan** | all on | Turn Steam, GOG, Epic or Xbox detection on or off individually. |
-| **Default order for `gs`** | Most used first | `Most used first` lets Flow float the games you open often to the top. `Alphabetical (A-Z)` gives a fixed order that ignores usage. Only affects the plain `gs` list — searching always ranks by relevance. |
+| **Default order for `lx`** | Most used first | `Most used first` lets Flow float the games you open often to the top. `Alphabetical (A-Z)` gives a fixed order that ignores usage. Only affects the plain `lx` list — searching always ranks by relevance. |
 | **Show games with no manifest entry** | on | List installed games the database doesn't know about, with just their install folder. Off hides them. |
 | **Maximum results** | 50 | Cap on how many games the list shows at once. |
-| **Game database refresh interval (days)** | 7 | How often the Ludusavi manifest is re-downloaded automatically. `gs !refresh` forces it immediately. |
-| **Installed games cache lifetime (minutes)** | 60 | How long the detected-games list is reused before re-scanning the stores. `gs !games` forces a re-scan immediately. |
+| **Game database refresh interval (days)** | 7 | How often the Ludusavi manifest is re-downloaded automatically. `lx !refresh` forces it immediately. |
+| **Installed games cache lifetime (minutes)** | 60 | How long the detected-games list is reused before re-scanning the stores. `lx !games` forces a re-scan immediately. |
 
 ## Installation
 
 Not yet in the Flow Launcher plugin store. To install from source:
 
 ```powershell
-git clone https://github.com/Zeocadio/Flow.Launcher.Plugin.GameSavesManager
-cd Flow.Launcher.Plugin.GameSavesManager
+git clone https://github.com/Leocadio94/Ludex
+cd Ludex
 .\scripts\deploy.ps1
 ```
 
@@ -88,8 +88,10 @@ memory.
 
 ## Related
 
-A [Raycast](https://raycast.com) version of this plugin exists for macOS and Windows. This one
-is an independent implementation for Flow Launcher, not a wrapper around it.
+Ludex also ships for [Raycast](../../raycast/README.md) and, in progress, for the PowerToys
+Command Palette. The detection and path-resolution code in this plugin lives in
+[`src/Core`](../Core) and is shared with the Command Palette version; the Raycast version is an
+independent TypeScript implementation. See the [repository README](../../README.md).
 
 ## Credits
 
@@ -111,7 +113,7 @@ Built for [Flow Launcher](https://www.flowlauncher.com), which is itself open so
 
 ## Licence
 
-[MIT](LICENSE) — © 2026 Zeocadio.
+[MIT](../../LICENSE) — © 2026 Zeocadio.
 
 The bundled game database is not redistributed with this plugin; it is downloaded from the
 Ludusavi manifest repository at runtime and cached locally.

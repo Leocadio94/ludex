@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```powershell
-dotnet build -c Release          # compile
+dotnet build Ludex.sln -c Release    # compile Core + Flow plugin
 .\scripts\deploy.ps1             # publish + install into the local Flow Launcher, restart it
 .\scripts\deploy.ps1 -NoRestart  # same, but leave Flow closed
 .\scripts\make-icons.ps1         # regenerate Images/*.png from Segoe Fluent Icons glyphs
@@ -28,7 +28,7 @@ The [Ludusavi manifest](https://github.com/mtkennerly/ludusavi-manifest) — a s
 file (~17 MB, ~52k entries) describing where every PC game keeps its saves and config. It is
 the machine-readable equivalent of PCGamingWiki, which has no usable API.
 
-### Entry point (`Main.cs`)
+### Entry point (`src/FlowLauncher/Main.cs`)
 
 `IAsyncPlugin`, `IContextMenu`, `ISettingProvider`, `IAsyncReloadable`.
 
@@ -39,12 +39,12 @@ Query routing on `Query.Search`:
 
 | Input | Handler |
 |---|---|
-| `gs` / `gs <text>` | `GameResults` — installed games, filtered with `API.FuzzySearch` |
-| `gs >{slug}` | `DrillInResults` — the folder list for one game |
-| `gs !games` / `gs !refresh` | `CommandResults` → `RunRefresh` |
-| `gs !all <text>` | `SearchAllResults` — the whole manifest, installed or not |
+| `lx` / `lx <text>` | `GameResults` — installed games, filtered with `API.FuzzySearch` |
+| `lx >{slug}` | `DrillInResults` — the folder list for one game |
+| `lx !games` / `lx !refresh` | `CommandResults` → `RunRefresh` |
+| `lx !all <text>` | `SearchAllResults` — the whole manifest, installed or not |
 
-Enter on a game rewrites the query to `gs >{slug} ` via `API.ChangeQuery` and returns `false`
+Enter on a game rewrites the query to `lx >{slug} ` via `API.ChangeQuery` and returns `false`
 so the window stays open. Slugs come from `Matcher.MakeSlug` and are guaranteed unique and
 space-free.
 
@@ -52,7 +52,7 @@ The empty-query list has two orderings, chosen by `Settings.DefaultSort`. **Usag
 gives every game the same score and leaves `Result.AddSelectedCount` on, so Flow's own usage
 history floats frequently-opened games up. **Alphabetical** assigns strictly descending scores
 by A-Z position and sets `AddSelectedCount = false`, otherwise Flow re-sorts equal scores by
-usage and the alphabetical order is lost. Searching (`gs <text>`) always ranks by fuzzy score
+usage and the alphabetical order is lost. Searching (`lx <text>`) always ranks by fuzzy score
 regardless of the setting.
 
 Two more behaviours exist because the obvious implementation left the user staring at a
@@ -71,7 +71,7 @@ launcher that appeared to do nothing:
   match). It is called directly from the result action so the dialog is created on the UI
   thread, and the returned task is deliberately not awaited.
 
-### Core library (`Lib/`)
+### Core library (`src/Core/`, namespace `Ludex.Core`)
 
 **`ManifestStore.cs`** — download → index → load.
 The YAML is parsed line by line against its indentation rather than with a YAML library, and
@@ -145,7 +145,7 @@ because the alternative is debugging a parser through a launcher UI.
 
 ## Relationship to the Raycast version
 
-Ported from the Raycast extension at `../Raycast/game-saves-manager`, which shares the
+Ported from the Raycast extension at `raycast/`, which shares the
 pipeline but not the code. Differences that were deliberate:
 
 - Install folder is exposed (the Raycast matcher drops `installPath` after matching).
