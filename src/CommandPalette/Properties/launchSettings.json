@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Ludex (Package)": {
+      "commandName": "MsixPackage",
+      "doNotLaunchApp": true
+    },
+    "Ludex (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
