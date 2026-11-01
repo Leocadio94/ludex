@@ -60,7 +60,7 @@ refresh. Opening an issue here cannot fix the data.
 
 ## Licence
 
-[MIT](LICENSE) © 2026 Zeocadio.
+[MIT](LICENSE) © 2026 Gabriel Leocádio.
 
 The game database is not redistributed with Ludex; it is downloaded from the Ludusavi manifest
 repository at runtime and cached locally.

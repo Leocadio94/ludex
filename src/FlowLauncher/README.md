@@ -62,8 +62,8 @@ Flow Launcher → Settings → Plugins → Ludex.
 Not yet in the Flow Launcher plugin store. To install from source:
 
 ```powershell
-git clone https://github.com/Leocadio94/Ludex
-cd Ludex
+git clone https://github.com/Leocadio94/ludex
+cd ludex
 .\scripts\deploy.ps1
 ```
 
@@ -113,7 +113,7 @@ Built for [Flow Launcher](https://www.flowlauncher.com), which is itself open so
 
 ## Licence
 
-[MIT](../../LICENSE) — © 2026 Zeocadio.
+[MIT](../../LICENSE) — © 2026 Gabriel Leocádio.
 
 The bundled game database is not redistributed with this plugin; it is downloaded from the
 Ludusavi manifest repository at runtime and cached locally.

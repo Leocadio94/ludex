@@ -3,10 +3,10 @@
   "ActionKeyword": "lx",
   "Name": "Ludex",
   "Description": "Browse installed games and open their save, config or install folders",
-  "Author": "Zeocadio",
+  "Author": "Gabriel Leocádio",
   "Version": "1.0.0",
   "Language": "csharp",
-  "Website": "https://github.com/Leocadio94/Ludex",
+  "Website": "https://github.com/Leocadio94/ludex",
   "IcoPath": "Images\\icon.png",
   "ExecuteFileName": "Flow.Launcher.Plugin.Ludex.dll"
 }
