@@ -10,12 +10,14 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
 {
     private const string DrillPrefix = ">";
     private const int ProgressBoxDelayMs = 1500;
-    private const int NoticeSeconds = 15;
+    private const int NoticeSeconds = 4;
 
     private PluginInitContext _context = null!;
     private Settings _settings = null!;
     private GameCatalog _catalog = null!;
     private (string Text, bool Failed, DateTime At)? _notice;
+    private volatile bool _refreshing;
+    private volatile int _refreshPercent;
 
     #region Lifecycle
 
@@ -65,8 +67,12 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
         {
             // Give the background load a chance to finish so the common case needs no
             // second keystroke; fall back to a status line when it is still downloading.
-            var loading = _catalog.StartLoad(false, false);
-            await Task.WhenAny(loading, Task.Delay(2500, CancellationToken.None)).ConfigureAwait(false);
+            // A refresh the user just asked for shows its status straight away instead.
+            if (!_refreshing)
+            {
+                var loading = _catalog.StartLoad(false, false);
+                await Task.WhenAny(loading, Task.Delay(2500, CancellationToken.None)).ConfigureAwait(false);
+            }
 
             if (!_catalog.Ready) return StatusResults();
         }
@@ -82,6 +88,9 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
 
     private List<Result> StatusResults()
     {
+        if (_refreshing)
+            return Single(_catalog.Status, $"{_refreshPercent}%", Icons.Refresh, _ => false);
+
         if (_catalog.Error is { } error)
         {
             return Single(T("Failed to load game data"), error, Icons.Missing, _ =>
@@ -138,6 +147,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
             {
                 Title = notice.Text,
                 IcoPath = notice.Failed ? Icons.Missing : Icons.App,
+                AutoCompleteText = $"{ActionKeyword(query)} ",
                 Score = 10000,
                 AddSelectedCount = false,
                 Action = _ =>
@@ -315,7 +325,11 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
     /// </summary>
     private async Task RunRefreshAsync(bool manifest, bool games, string caption, string keyword)
     {
+        _refreshing = true;
+        _refreshPercent = 0;
+        _notice = null;
         _catalog.Begin(caption);
+        _context.API.ChangeQuery($"{keyword} ");
 
         using var cts = new CancellationTokenSource();
         Action<double>? sink = null;
@@ -325,6 +339,14 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
         {
             latest = p;
             sink?.Invoke(p);
+
+            // The list only refreshes on a query, so ask for one each time the percentage moves a step.
+            var step = (int)(p / 10) * 10;
+            if (step != _refreshPercent)
+            {
+                _refreshPercent = step;
+                _context.API.ReQuery();
+            }
         }, cts.Token);
 
         try
@@ -349,15 +371,24 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
             _context.API.LogException(nameof(Main), "Refresh failed", e);
         }
 
+        _refreshing = false;
         if (cts.IsCancellationRequested) return;
 
         var failed = _catalog.Error is not null;
         var message = failed ? F("Failed: {0}", _catalog.Error ?? "") : F("Ready — {0} games", _catalog.Games.Count);
 
         // Windows may suppress the toast, so the result is also shown as the first row of the game list.
-        _notice = (message, failed, DateTime.UtcNow);
+        var shownAt = DateTime.UtcNow;
+        _notice = (message, failed, shownAt);
         _context.API.ShowMsg("Ludex", message, Icons.App);
         _context.API.ChangeQuery($"{keyword} ");
+
+        _ = Task.Delay(TimeSpan.FromSeconds(NoticeSeconds)).ContinueWith(_ =>
+        {
+            if (_notice is not { } current || current.At != shownAt) return;
+            _notice = null;
+            _context.API.ReQuery();
+        }, TaskScheduler.Default);
     }
 
     /// <summary>
