@@ -157,7 +157,7 @@ pipeline but not the code. Differences that were deliberate:
 
 ## Command Palette extension (`src/CommandPalette/`)
 
-Front end over the same Core; pages mirror the Flow routes (`GamesPage` → `GamePage`, `SearchAllPage`, `RefreshCommand`).
+Front end over the same Core; pages mirror the Flow routes (`GamesPage` → `GamePage`, `SearchAllPage`, `RefreshPage`).
 
 - Runs out of process as a packaged COM server. Build alone does not update it: deploy from Visual Studio
   (Debug | x64), then run `Reload` in Command Palette. The solution needs the `Deploy.0` entries for this
@@ -168,3 +168,5 @@ Front end over the same Core; pages mirror the Flow routes (`GamesPage` → `Gam
   (launch / open folder), unlike Flow's `AddSelectedCount`.
 - Settings are the toolkit's `JsonSettingsManager`; `SettingsManager.ApplyTo` copies them into `Ludex.Core.Settings`.
   `ManifestUpdatedUtcTicks` is persisted separately (`cache/manifest-updated.txt`).
+- Status messages and toasts sent through `ExtensionHost` are not shown when a command runs from the home
+  page, so refresh progress lives in `RefreshPage`'s list. Use `CommandResult.ShowToast` for one-off messages.

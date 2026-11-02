@@ -12,3 +12,7 @@ Open items that are not part of the current phase. Move each to an issue once so
 - **Raycast Store**: `author` in `raycast/package.json` must be a Raycast username to publish.
 - **Old repo**: archive `Leocadio94/raycast-game-saves-manager` once the monorepo copy is confirmed.
 - **ARM64**: the solution now maps an ARM64 platform for the extension; nothing has been run on ARM64.
+- **Flow refresh dialog**: `lx !refresh` / `lx !games` flashes the progress box and closes Flow (predates the monorepo).
+  Check how `ShowProgressBoxAsync` interacts with the window hiding after the result action returns `false`.
+- **Ludex icon**: the Command Palette extension still uses the template placeholder assets in `src/CommandPalette/Assets`.
+- **Command Palette alias**: users set `lx` themselves (Settings > Extensions > Ludex); mention it in the README.

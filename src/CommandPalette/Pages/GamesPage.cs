@@ -48,7 +48,7 @@ internal sealed partial class GamesPage : ListPage
     {
         if (catalog.Error is { } error)
         {
-            return new ListItem(new RefreshCommand(_app, manifest: true))
+            return new ListItem(new RefreshPage(_app, manifest: true))
             {
                 Title = "Failed to load game data",
                 Subtitle = error,

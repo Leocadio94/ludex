@@ -23,11 +23,14 @@ internal static class GameDisplay
         _ => store.ToString(),
     };
 
+    private static string Count(int count, string noun) =>
+        count.ToString(CultureInfo.InvariantCulture) + " " + noun + (count > 1 ? "s" : "");
+
     public static string Subtitle(GameWithPaths game)
     {
         var counts = new List<string>();
-        if (game.SavePaths.Count > 0) counts.Add($"{game.SavePaths.Count} save{(game.SavePaths.Count > 1 ? "s" : "")}");
-        if (game.ConfigPaths.Count > 0) counts.Add($"{game.ConfigPaths.Count} config{(game.ConfigPaths.Count > 1 ? "s" : "")}");
+        if (game.SavePaths.Count > 0) counts.Add(Count(game.SavePaths.Count, "save"));
+        if (game.ConfigPaths.Count > 0) counts.Add(Count(game.ConfigPaths.Count, "config"));
         if (counts.Count == 0) counts.Add("no known save paths");
 
         var subtitle = string.Join(", ", counts);
@@ -42,17 +45,23 @@ internal static class GameDisplay
         var body = new StringBuilder();
 
         if (!string.IsNullOrEmpty(game.InstallPath))
-            body.AppendLine($"**Install folder**\n\n`{game.InstallPath}`\n");
+            body.AppendLine("**Install folder**\n\n`" + game.InstallPath + "`\n");
 
         AppendPaths(body, "Saves", game.SavePaths);
         AppendPaths(body, "Config", game.ConfigPaths);
 
         if (body.Length == 0) body.Append("No known save or config paths.");
 
+        var tags = new List<ITag> { new Tag(StoreLabel(game.Store)) };
+        if (game.SavePaths.Count > 0) tags.Add(new Tag(Count(game.SavePaths.Count, "save")));
+        if (game.ConfigPaths.Count > 0) tags.Add(new Tag(Count(game.ConfigPaths.Count, "config")));
+
         return new Details
         {
             Title = game.Name,
+            HeroImage = Icons.ForGame(game.IconPath, game.Matched),
             Body = body.ToString(),
+            Metadata = [new DetailsElement { Key = "Details", Data = new DetailsTags { Tags = tags.ToArray() } }],
         };
     }
 
@@ -75,7 +84,7 @@ internal static class GameDisplay
     {
         if (paths.Count == 0) return;
 
-        body.AppendLine($"**{heading}**\n");
+        body.AppendLine("**" + heading + "**\n");
 
         foreach (var path in paths.Take(MaxPathsInDetails))
             body.AppendLine("- `" + path.Path + "`" + (path.Exists ? "" : "  (not created yet)"));
