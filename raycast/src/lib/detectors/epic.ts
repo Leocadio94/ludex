@@ -24,11 +24,18 @@ function getManifestsDir(): string | null {
       "Epic",
       "EpicGamesLauncher",
       "Data",
-      "Manifests"
+      "Manifests",
     );
   }
   // Linux via Heroic launcher
-  return path.join(os.homedir(), ".config", "heroic", "legendaryConfig", "legendary", "metadata");
+  return path.join(
+    os.homedir(),
+    ".config",
+    "heroic",
+    "legendaryConfig",
+    "legendary",
+    "metadata",
+  );
 }
 
 export async function detectEpicGames(): Promise<InstalledGame[]> {
@@ -42,7 +49,7 @@ export async function detectEpicGames(): Promise<InstalledGame[]> {
       if (!entry.endsWith(".item")) continue;
       try {
         const manifest: EpicManifestItem = JSON.parse(
-          fs.readFileSync(path.join(manifestsDir, entry), "utf-8")
+          fs.readFileSync(path.join(manifestsDir, entry), "utf-8"),
         );
         if (manifest.bIsIncompleteInstall) continue;
         if (!manifest.DisplayName || !manifest.InstallLocation) continue;
@@ -55,9 +62,13 @@ export async function detectEpicGames(): Promise<InstalledGame[]> {
             ? `com.epicgames.launcher://apps/${manifest.AppName}?action=launch&silent=true`
             : undefined,
         });
-      } catch { /* skip malformed manifest */ }
+      } catch {
+        /* skip malformed manifest */
+      }
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   return games;
 }

@@ -31,7 +31,8 @@ function getPathVars(): PathVars {
       home,
       osUserName,
       winAppData: process.env.APPDATA ?? path.join(home, "AppData", "Roaming"),
-      winLocalAppData: process.env.LOCALAPPDATA ?? path.join(home, "AppData", "Local"),
+      winLocalAppData:
+        process.env.LOCALAPPDATA ?? path.join(home, "AppData", "Local"),
       winLocalAppDataLow: path.join(home, "AppData", "LocalLow"),
       winDocuments: path.join(home, "Documents"),
       winPublic: "C:\\Users\\Public",
@@ -85,12 +86,17 @@ export function resolveTemplate(
   result = result.replace(/<storeGameId>/g, "*");
 
   // Windows
-  if (vars.winAppData) result = result.replace(/<winAppData>/g, vars.winAppData);
-  if (vars.winLocalAppData) result = result.replace(/<winLocalAppData>/g, vars.winLocalAppData);
-  if (vars.winLocalAppDataLow) result = result.replace(/<winLocalAppDataLow>/g, vars.winLocalAppDataLow);
-  if (vars.winDocuments) result = result.replace(/<winDocuments>/g, vars.winDocuments);
+  if (vars.winAppData)
+    result = result.replace(/<winAppData>/g, vars.winAppData);
+  if (vars.winLocalAppData)
+    result = result.replace(/<winLocalAppData>/g, vars.winLocalAppData);
+  if (vars.winLocalAppDataLow)
+    result = result.replace(/<winLocalAppDataLow>/g, vars.winLocalAppDataLow);
+  if (vars.winDocuments)
+    result = result.replace(/<winDocuments>/g, vars.winDocuments);
   if (vars.winPublic) result = result.replace(/<winPublic>/g, vars.winPublic);
-  if (vars.winProgramData) result = result.replace(/<winProgramData>/g, vars.winProgramData);
+  if (vars.winProgramData)
+    result = result.replace(/<winProgramData>/g, vars.winProgramData);
   if (vars.winDir) result = result.replace(/<winDir>/g, vars.winDir);
 
   // Linux / macOS
@@ -127,7 +133,12 @@ export function expandWildcardPath(p: string): string[] {
     return [];
   }
 
-  const regex = new RegExp("^" + pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*") + "$", "i");
+  const regex = new RegExp(
+    "^" +
+      pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*") +
+      "$",
+    "i",
+  );
   const results: string[] = [];
 
   for (const entry of entries) {
@@ -145,7 +156,11 @@ export function expandWildcardPath(p: string): string[] {
 }
 
 // Resolves a template and expands wildcards. Returns [] if template can't be resolved.
-export function resolveAndExpand(template: string, installPath?: string, storeRoot?: string): string[] {
+export function resolveAndExpand(
+  template: string,
+  installPath?: string,
+  storeRoot?: string,
+): string[] {
   const resolved = resolveTemplate(template, installPath, storeRoot);
   if (!resolved) return [];
   return expandWildcardPath(resolved);

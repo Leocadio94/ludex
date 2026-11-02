@@ -9,11 +9,14 @@ interface XboxGame {
 
 function runPowerShell(script: string): string {
   const encoded = Buffer.from(script, "utf16le").toString("base64");
-  return execSync(`powershell -NoProfile -NonInteractive -EncodedCommand ${encoded}`, {
-    encoding: "utf-8",
-    timeout: 25000,
-    stdio: ["ignore", "pipe", "ignore"],
-  });
+  return execSync(
+    `powershell -NoProfile -NonInteractive -EncodedCommand ${encoded}`,
+    {
+      encoding: "utf-8",
+      timeout: 25000,
+      stdio: ["ignore", "pipe", "ignore"],
+    },
+  );
 }
 
 // Reads display name from AppxManifest.xml.
@@ -47,7 +50,10 @@ $results | ConvertTo-Json -Compress -Depth 1
     const parsed: unknown = JSON.parse(output);
     const items = Array.isArray(parsed) ? parsed : [parsed];
     return items
-      .filter((item): item is Record<string, string> => !!item && typeof item === "object")
+      .filter(
+        (item): item is Record<string, string> =>
+          !!item && typeof item === "object",
+      )
       .filter((item) => item.name && item.path)
       .map((item) => ({
         name: String(item.name),

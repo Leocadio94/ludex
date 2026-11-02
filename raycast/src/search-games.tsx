@@ -1,4 +1,11 @@
-import { Action, ActionPanel, Icon, List, showToast, Toast } from "@raycast/api";
+import {
+  Action,
+  ActionPanel,
+  Icon,
+  List,
+  showToast,
+  Toast,
+} from "@raycast/api";
 import { useEffect, useMemo, useState } from "react";
 import { loadManifest, refreshManifest } from "./lib/manifest";
 import type { IndexedGame, ManifestIndex } from "./lib/types";
@@ -33,7 +40,10 @@ export default function Command() {
     load();
   }, []);
 
-  const names = useMemo(() => (manifest ? Object.keys(manifest) : []), [manifest]);
+  const names = useMemo(
+    () => (manifest ? Object.keys(manifest) : []),
+    [manifest],
+  );
 
   // Rendering the whole database (~14k rows) exhausts the extension's memory, so only matches are mounted.
   const visible = useMemo(() => {
@@ -57,18 +67,31 @@ export default function Command() {
       onSearchTextChange={setQuery}
       searchBarPlaceholder="Search all games..."
       navigationTitle={
-        isLoading ? statusMsg : `${names.length.toLocaleString()} games in database`
+        isLoading
+          ? statusMsg
+          : `${names.length.toLocaleString()} games in database`
       }
     >
       {!isLoading && visible.length === 0 && (
         <List.EmptyView
-          title={query.trim() ? "No games found" : "Type to search the game database"}
-          description={query.trim() ? undefined : `${names.length.toLocaleString()} games indexed`}
+          title={
+            query.trim() ? "No games found" : "Type to search the game database"
+          }
+          description={
+            query.trim()
+              ? undefined
+              : `${names.length.toLocaleString()} games indexed`
+          }
         />
       )}
       {manifest &&
         visible.map((name) => (
-          <GameEntry key={name} name={name} game={manifest[name]} onRefresh={() => load(true)} />
+          <GameEntry
+            key={name}
+            name={name}
+            game={manifest[name]}
+            onRefresh={() => load(true)}
+          />
         ))}
     </List>
   );
@@ -85,8 +108,10 @@ function GameEntry({
 }) {
   const accessories: List.Item.Accessory[] = [];
 
-  if (game.steamId) accessories.push({ text: `Steam: ${game.steamId}`, icon: Icon.Store });
-  if (game.gogId) accessories.push({ text: `GOG: ${game.gogId}`, icon: Icon.Store });
+  if (game.steamId)
+    accessories.push({ text: `Steam: ${game.steamId}`, icon: Icon.Store });
+  if (game.gogId)
+    accessories.push({ text: `GOG: ${game.gogId}`, icon: Icon.Store });
 
   const pathCount = game.files.length;
   accessories.push({

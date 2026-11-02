@@ -6,10 +6,15 @@ import type { InstalledGame } from "../types";
 // goggame-<id>.info lists play tasks; running the primary executable works without GOG Galaxy.
 function findPrimaryPlayTask(installPath: string): string | undefined {
   try {
-    const info = fs.readdirSync(installPath).find((f) => /^goggame-.*\.info$/i.test(f));
+    const info = fs
+      .readdirSync(installPath)
+      .find((f) => /^goggame-.*\.info$/i.test(f));
     if (!info) return undefined;
-    const raw = fs.readFileSync(path.join(installPath, info), "utf-8").replace(/^﻿/, "");
-    const tasks: { type?: string; path?: string; isPrimary?: boolean }[] = JSON.parse(raw).playTasks ?? [];
+    const raw = fs
+      .readFileSync(path.join(installPath, info), "utf-8")
+      .replace(/^\u{FEFF}/u, "");
+    const tasks: { type?: string; path?: string; isPrimary?: boolean }[] =
+      JSON.parse(raw).playTasks ?? [];
 
     let first: string | undefined;
     for (const task of tasks) {
@@ -33,11 +38,14 @@ interface GogGame {
 
 function runPowerShell(script: string): string {
   const encoded = Buffer.from(script, "utf16le").toString("base64");
-  return execSync(`powershell -NoProfile -NonInteractive -EncodedCommand ${encoded}`, {
-    encoding: "utf-8",
-    timeout: 10000,
-    stdio: ["ignore", "pipe", "ignore"],
-  });
+  return execSync(
+    `powershell -NoProfile -NonInteractive -EncodedCommand ${encoded}`,
+    {
+      encoding: "utf-8",
+      timeout: 10000,
+      stdio: ["ignore", "pipe", "ignore"],
+    },
+  );
 }
 
 function getGogGamesWindows(): GogGame[] {
@@ -64,9 +72,16 @@ $results | ConvertTo-Json -Compress -Depth 1
     const parsed: unknown = JSON.parse(output);
     const items = Array.isArray(parsed) ? parsed : [parsed];
     return items
-      .filter((item): item is Record<string, string> => !!item && typeof item === "object")
+      .filter(
+        (item): item is Record<string, string> =>
+          !!item && typeof item === "object",
+      )
       .filter((item) => item.name && item.path)
-      .map((item) => ({ id: String(item.id ?? ""), name: String(item.name), installPath: String(item.path) }));
+      .map((item) => ({
+        id: String(item.id ?? ""),
+        name: String(item.name),
+        installPath: String(item.path),
+      }));
   } catch {
     return [];
   }

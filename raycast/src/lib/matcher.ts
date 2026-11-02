@@ -1,6 +1,12 @@
 import * as fs from "fs";
 import { getCurrentOS, resolveAndExpand } from "./path-resolver";
-import type { InstalledGame, ManifestIndex, GameWithPaths, ResolvedPath, Store } from "./types";
+import type {
+  InstalledGame,
+  ManifestIndex,
+  GameWithPaths,
+  ResolvedPath,
+  Store,
+} from "./types";
 
 // Store names used in the manifest's `when.store` field
 const STORE_MANIFEST_NAMES: Record<Store, string[]> = {
@@ -29,7 +35,7 @@ function deduplicatePaths(paths: ResolvedPath[]): ResolvedPath[] {
 
 export function matchGames(
   installedGames: InstalledGame[],
-  manifestIndex: ManifestIndex
+  manifestIndex: ManifestIndex,
 ): GameWithPaths[] {
   const currentOS = getCurrentOS();
 
@@ -76,7 +82,11 @@ export function matchGames(
       // Store filter (undefined = any store)
       if (file.store && !storeAliases.includes(file.store)) continue;
 
-      const resolved = resolveAndExpand(file.template, game.installPath, game.storeRoot);
+      const resolved = resolveAndExpand(
+        file.template,
+        game.installPath,
+        game.storeRoot,
+      );
 
       for (const p of resolved) {
         const rp: ResolvedPath = {

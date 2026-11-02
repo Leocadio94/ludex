@@ -26,7 +26,9 @@ export default function Command() {
   return (
     <List
       isLoading={isLoading}
-      navigationTitle={isLoading ? statusMsg : `${entries.length} games in manifest`}
+      navigationTitle={
+        isLoading ? statusMsg : `${entries.length} games in manifest`
+      }
     >
       {entries.map(([name, game]) => (
         <List.Item

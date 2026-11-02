@@ -81,7 +81,7 @@ function getSteamRoot(): string | null {
           encoding: "utf-8",
           timeout: 3000,
           stdio: ["ignore", "pipe", "ignore"],
-        }
+        },
       );
       const match = out.match(/SteamPath\s+REG_SZ\s+(.+)/i);
       if (match) return match[1].trim().replace(/\//g, "\\");
@@ -102,7 +102,7 @@ function getSteamRoot(): string | null {
       os.homedir(),
       "Library",
       "Application Support",
-      "Steam"
+      "Steam",
     );
     return fs.existsSync(p) ? p : null;
   }
@@ -156,7 +156,7 @@ function readAcfFiles(steamAppsPath: string): SteamAcf[] {
         continue;
       try {
         const data = parseVdf(
-          fs.readFileSync(path.join(steamAppsPath, entry), "utf-8")
+          fs.readFileSync(path.join(steamAppsPath, entry), "utf-8"),
         ) as Record<string, string>;
         if (data.appid && data.name && data.installdir) {
           results.push({

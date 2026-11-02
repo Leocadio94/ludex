@@ -162,7 +162,7 @@ function parseEntryLines(entryLines: string[]): IndexedGame | null {
 
 // Download the manifest YAML and stream it straight to disk — no JS heap involvement.
 async function downloadManifestFile(
-  onProgress?: (msg: string) => void
+  onProgress?: (msg: string) => void,
 ): Promise<void> {
   onProgress?.("Downloading game database...");
 
@@ -185,8 +185,8 @@ async function downloadManifestFile(
       if (done) break;
       await new Promise<void>((resolve, reject) =>
         dest.write(value, (err: Error | null | undefined) =>
-          err ? reject(err) : resolve()
-        )
+          err ? reject(err) : resolve(),
+        ),
       );
     }
   } catch (err) {
@@ -223,7 +223,7 @@ function buildIndexToFile(onProgress?: (msg: string) => void): Promise<void> {
         if (indexed) {
           const sep = firstEntry ? "" : ",";
           dest.write(
-            `${sep}${JSON.stringify(gameName)}:${JSON.stringify(indexed)}`
+            `${sep}${JSON.stringify(gameName)}:${JSON.stringify(indexed)}`,
           );
           firstEntry = false;
         }
@@ -231,7 +231,7 @@ function buildIndexToFile(onProgress?: (msg: string) => void): Promise<void> {
       gameCount++;
       if (gameCount % 2000 === 0) {
         onProgress?.(
-          `Indexing game database... (${gameCount.toLocaleString()} games)`
+          `Indexing game database... (${gameCount.toLocaleString()} games)`,
         );
       }
       entryLines = [];
@@ -273,7 +273,7 @@ function buildIndexToFile(onProgress?: (msg: string) => void): Promise<void> {
 }
 
 export async function loadManifest(
-  onProgress?: (msg: string) => void
+  onProgress?: (msg: string) => void,
 ): Promise<ManifestIndex> {
   if (isCacheValid() && fs.existsSync(INDEX_FILE)) {
     onProgress?.("Loading cached manifest...");
@@ -296,7 +296,7 @@ export async function loadManifest(
 }
 
 export async function refreshManifest(
-  onProgress?: (msg: string) => void
+  onProgress?: (msg: string) => void,
 ): Promise<ManifestIndex> {
   cache.remove(CACHE_KEY_TIMESTAMP);
   return loadManifest(onProgress);

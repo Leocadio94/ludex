@@ -10,7 +10,9 @@ export default async function Command() {
 
   try {
     const [index, installed] = await Promise.all([
-      refreshManifest((msg) => { toast.message = msg; }),
+      refreshManifest((msg) => {
+        toast.message = msg;
+      }),
       detectInstalledGames(true),
     ]);
 

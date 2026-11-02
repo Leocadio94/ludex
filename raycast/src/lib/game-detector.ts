@@ -35,7 +35,9 @@ async function detect(): Promise<InstalledGame[]> {
   return games;
 }
 
-export async function detectInstalledGames(forceRefresh = false): Promise<InstalledGame[]> {
+export async function detectInstalledGames(
+  forceRefresh = false,
+): Promise<InstalledGame[]> {
   if (!forceRefresh && isCacheValid()) {
     const cached = cache.get(CACHE_KEY_GAMES);
     if (cached) return JSON.parse(cached) as InstalledGame[];

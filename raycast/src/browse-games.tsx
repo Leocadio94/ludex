@@ -169,9 +169,15 @@ function GameListItem({
               <Action
                 title="Launch Game"
                 icon={Icon.Play}
-                onAction={() => launchGame(game.launchTarget!).catch((err) =>
-                  showToast({ style: Toast.Style.Failure, title: "Could not launch game", message: String(err) }),
-                )}
+                onAction={() =>
+                  launchGame(game.launchTarget!).catch((err) =>
+                    showToast({
+                      style: Toast.Style.Failure,
+                      title: "Could not launch game",
+                      message: String(err),
+                    }),
+                  )
+                }
               />
             </ActionPanel.Section>
           )}
@@ -206,7 +212,11 @@ function pathLabel(p: ResolvedPath): string | undefined {
 
 function folderTitle(p: ResolvedPath, context: "save" | "config"): string {
   const hasBoth = p.tags.includes("save") && p.tags.includes("config");
-  const base = hasBoth ? "Save & Config Folder" : context === "save" ? "Save Folder" : "Config Folder";
+  const base = hasBoth
+    ? "Save & Config Folder"
+    : context === "save"
+      ? "Save Folder"
+      : "Config Folder";
   const label = pathLabel(p);
   return label ? `Open ${base} (${label})` : `Open ${base}`;
 }
