@@ -76,7 +76,7 @@ export function matchGames(
       // Store filter (undefined = any store)
       if (file.store && !storeAliases.includes(file.store)) continue;
 
-      const resolved = resolveAndExpand(file.template, game.installPath);
+      const resolved = resolveAndExpand(file.template, game.installPath, game.storeRoot);
 
       for (const p of resolved) {
         const rp: ResolvedPath = {

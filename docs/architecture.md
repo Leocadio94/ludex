@@ -142,7 +142,6 @@ pipeline but not the code. Differences that were deliberate:
 
 - Install folder is exposed (the Raycast matcher drops `installPath` after matching).
 - Unmatched games are listed instead of discarded.
-- `<root>` is resolved correctly; the Raycast version uses `dirname(installPath)`.
 - Manifest `alias` entries are used; the Raycast version parses them into a type it never fills.
 - The V8 heap limit that forced the streaming design there does not apply here, but the
   streaming parser was kept because it is also the fastest option.

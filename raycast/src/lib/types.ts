@@ -8,6 +8,7 @@ export interface InstalledGame {
   store: Store;
   storeGameId?: string; // Steam appid, GOG productId, etc.
   installPath?: string; // Full path to game install directory
+  storeRoot?: string; // What <root> means: the folder holding steamapps for Steam; unset = parent of installPath
 }
 
 // Raw manifest entry (as returned by js-yaml)

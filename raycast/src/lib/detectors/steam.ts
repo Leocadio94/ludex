@@ -187,6 +187,7 @@ export async function detectSteamGames(): Promise<InstalledGame[]> {
         store: "steam",
         storeGameId: acf.appid,
         installPath: path.join(libraryPath, "common", acf.installdir),
+        storeRoot: path.dirname(libraryPath),
       });
     }
   }

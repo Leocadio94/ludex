@@ -60,7 +60,12 @@ function getPathVars(): PathVars {
 
 // Resolves a manifest path template to a real filesystem path.
 // Returns empty string if the template can't be fully resolved.
-export function resolveTemplate(template: string, installPath?: string, storeUserId = "*"): string {
+export function resolveTemplate(
+  template: string,
+  installPath?: string,
+  storeRoot?: string,
+  storeUserId = "*",
+): string {
   const vars = getPathVars();
   let result = template;
 
@@ -68,9 +73,9 @@ export function resolveTemplate(template: string, installPath?: string, storeUse
   if (/<(?:game|root|base)>/.test(result)) {
     if (!installPath) return "";
     const gameName = path.basename(installPath);
-    const gameRoot = path.dirname(installPath);
+    const root = storeRoot ?? path.dirname(installPath);
     result = result.replace(/<game>/g, gameName);
-    result = result.replace(/<root>/g, gameRoot);
+    result = result.replace(/<root>/g, root);
     result = result.replace(/<base>/g, installPath);
   }
 
@@ -140,8 +145,8 @@ export function expandWildcardPath(p: string): string[] {
 }
 
 // Resolves a template and expands wildcards. Returns [] if template can't be resolved.
-export function resolveAndExpand(template: string, installPath?: string): string[] {
-  const resolved = resolveTemplate(template, installPath);
+export function resolveAndExpand(template: string, installPath?: string, storeRoot?: string): string[] {
+  const resolved = resolveTemplate(template, installPath, storeRoot);
   if (!resolved) return [];
   return expandWildcardPath(resolved);
 }
