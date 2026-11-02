@@ -15,7 +15,7 @@
 [![Raycast](https://img.shields.io/badge/Raycast-extension-8B5CF6?style=flat-square&logo=raycast&logoColor=white)](raycast/README.md)
 [![Stars](https://img.shields.io/github/stars/Leocadio94/ludex?style=flat-square&color=6366F1)](https://github.com/Leocadio94/ludex/stargazers)
 
-**[Features](#features) · [Versions](#versions) · [Install](#install) · [How it works](#how-it-works) · [Credits](#credits)**
+**[Features](#features) · [Versions](#versions) · [Install](#install) · [Build from source](#build-from-source) · [How it works](#how-it-works) · [Credits](#credits)**
 
 **English** · [Português (Brasil)](README.pt-BR.md)
 
@@ -68,7 +68,11 @@ None of them is in a store yet.
 
 ## Install
 
-Windows only, built from source. Flow Launcher needs the [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0);
+Ludex is not in any store yet. Until it is, [build it from source](#build-from-source).
+
+## Build from source
+
+For trying it out or contributing. Windows only. Flow Launcher needs the [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0);
 the Command Palette extension needs Visual Studio (see below); Raycast needs Node.js.
 
 **Flow Launcher**

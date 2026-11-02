@@ -2,13 +2,30 @@
 
 Open items that are not part of the current phase. Move each to an issue once someone owns it.
 
+- **README install section**: when a store publishes Ludex, rewrite "Install" in `README.md` and `README.pt-BR.md`
+  with that store's steps and keep "Build from source" for contributors.
+- **Raycast Store**: `author` is set and `ray lint` passes. Before `npm run publish`:
+  - add `raycast/CHANGELOG.md` (`## [Initial Version] - {PR_MERGE_DATE}`);
+  - add 3 to 6 screenshots (2000x1250 PNG, via Capture Window in dev mode, "Save to Metadata");
+  - drop `navigationTitle` from the root commands (Browse Games, Search Games): the Store guidelines forbid
+    changing it on a root command;
+  - delete `src/download-manifest-test.tsx`, a leftover that is not in the manifest;
+  - decide `platforms`: it lists macOS but nothing was tested there (the guidelines say to restrict it);
+  - replace `execSync` + PowerShell in the GOG and Xbox detectors with `runPowerShellScript` from `@raycast/utils`;
+  - the README links to `../README.md`, which breaks in the Store; use an absolute URL;
+  - the category is Developer Tools; Fun or Productivity may fit better.
+- **Command Palette publishing**: replace the template `Identity/@Publisher` in `Package.appxmanifest`, publish
+  through WinGet (Inno Setup, see `docs/reference/cmdpal-template`) or the Microsoft Store, then add the extension to
+  the community gallery with a pull request to `microsoft/CmdPal-Extensions` (an `extension.json` and an icon pointing
+  to the install source; a Microsoft CLA is required). Copy the publish-extension skill to `.claude/skills/` when
+  starting.
+- **Flow Launcher publishing**: `.github/workflows/release-flow.yml` builds a zip on a `flow-v*` tag but has never
+  run. Needs a public repo and a tag matching `plugin.json` Version. Then a pull request to
+  `Flow-Launcher/Flow.Launcher.PluginsManifest` adding a `plugins/<name>-<uuid>.json` with the `plugin.json` fields,
+  `UrlDownload`, `UrlSourceCode` and an `IcoPath` served from a CDN such as jsDelivr. Submissions are scanned with
+  VirusTotal, and listing can take days. The plugin ID must not change.
 - **Command Palette manifest text**: `DisplayName` and `Description` in `Package.appxmanifest` are still English;
   translating them needs Windows resource files.
-- **Flow Launcher publishing**: `.github/workflows/release-flow.yml` builds a zip on a `flow-v*` tag but has never run. Needs a public repo, a tag matching `plugin.json` Version, then a submission to the Flow plugin store (a pull request to the Flow Launcher plugin manifest repository; check its current requirements first). The plugin ID must not change.
-- **Command Palette publishing**: replace the template `Identity/@Publisher` in `Package.appxmanifest`, then choose
-  WinGet (Inno Setup, see `docs/reference/cmdpal-template`) or the Microsoft Store. Copy the publish-extension
-  skill to `.claude/skills/` when starting.
-- **Raycast Store**: `author` is set to the Raycast username and `ray lint` passes; publishing itself is not started.
 - **ARM64**: the solution maps an ARM64 platform for the extension; nothing has been run on ARM64.
 - **Fallback command (idea)**: typing a game name on the Command Palette home page could offer "Search Ludex for
   ...". See `docs/reference/cmdpal-template/skills/add-fallback-commands`.
