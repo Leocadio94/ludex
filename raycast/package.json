@@ -2,14 +2,14 @@
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "ludex",
   "title": "Ludex",
-  "description": "Browse installed games and open their save, config or install folders",
+  "description": "Launch installed games and open their save, config or install folders",
   "icon": "extension-icon.png",
   "license": "MIT",
   "commands": [
     {
       "name": "browse-games",
       "title": "Browse Games",
-      "description": "List installed games and open their save or config folders",
+      "description": "List installed games, launch them and open their save or config folders",
       "mode": "view"
     },
     {
@@ -21,13 +21,13 @@
     {
       "name": "refresh-cache",
       "title": "Refresh Game Database",
-      "description": "Force re-download and re-index the game save database",
+      "description": "Download the game save database again and rebuild its index",
       "mode": "no-view"
     },
     {
       "name": "refresh-installed-games",
       "title": "Refresh Installed Games",
-      "description": "Re-detect installed games and update the cache",
+      "description": "Re-scan the stores and update the installed games cache",
       "mode": "no-view"
     }
   ],
