@@ -9,6 +9,7 @@ namespace Flow.Launcher.Plugin.Ludex;
 public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadable, IPluginI18n
 {
     private const string DrillPrefix = ">";
+    private const int ProgressBoxDelayMs = 1500;
 
     private PluginInitContext _context = null!;
     private Settings _settings = null!;
@@ -289,25 +290,40 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
     }
 
     /// <summary>
-    /// Runs a refresh behind Flow's progress dialog. Called straight from a result action so
-    /// the dialog is created on the UI thread; the returned task is intentionally not awaited.
+    /// Runs a refresh, behind Flow's progress dialog only when it is slow. Called straight from a
+    /// result action so the dialog is created on the UI thread; the returned task is intentionally
+    /// not awaited.
     /// </summary>
     private async Task RunRefreshAsync(bool manifest, bool games, string caption)
     {
         _catalog.Begin(caption);
 
         using var cts = new CancellationTokenSource();
+        Action<double>? sink = null;
+        var latest = 0.0;
+
+        var load = _catalog.StartLoad(manifest, games, p =>
+        {
+            latest = p;
+            sink?.Invoke(p);
+        }, cts.Token);
 
         try
         {
-            await _context.API.ShowProgressBoxAsync(
-                caption,
-                async report =>
-                {
-                    report(0);
-                    await _catalog.StartLoad(manifest, games, report, cts.Token).ConfigureAwait(false);
-                },
-                cts.Cancel);
+            // A refresh normally takes well under two seconds, and the dialog would only flash
+            // and pull focus, which makes Flow hide itself.
+            if (await Task.WhenAny(load, Task.Delay(ProgressBoxDelayMs)) != load)
+            {
+                await _context.API.ShowProgressBoxAsync(
+                    caption,
+                    async report =>
+                    {
+                        sink = report;
+                        report(latest);
+                        await load.ConfigureAwait(false);
+                    },
+                    cts.Cancel);
+            }
         }
         catch (Exception e)
         {

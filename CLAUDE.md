@@ -38,7 +38,8 @@ How it fits together: [docs/architecture.md](docs/architecture.md), [docs/decisi
   never materialized.
 - **Flow Alphabetical sort** needs `AddSelectedCount = false`, or Flow re-sorts equal scores by usage.
 - **Flow refresh**: `RunRefreshAsync` is called straight from the result action so the dialog is created on the
-  UI thread; its task is deliberately not awaited.
+  UI thread; its task is deliberately not awaited. The dialog only appears after 1.5 s: it steals focus, and Flow
+  hides itself when it loses focus.
 - **Command Palette**: the `[Guid]` in `Ludex.cs` must match the CLSID in `Package.appxmanifest` (twice);
   `Deploy.0` entries in `Ludex.sln` are required for "Deploy" to exist; its `Directory.Build.props` /
   `Directory.Packages.props` stay inside `src/CommandPalette` so x64/ARM64 and central package versions don't leak.
