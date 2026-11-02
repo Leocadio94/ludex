@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="320" viewBox="0 0 1280 320"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6366F1"/><stop offset="1" stop-color="#8B5CF6"/></linearGradient></defs>
+<g transform="translate(100 60) scale(0.4)"><rect width="512" height="512" rx="112" fill="url(#bg)"/>
+<path fill="#FFFFFF" d="M128 136H224L264 176H384A32 32 0 0 1 416 208V352A32 32 0 0 1 384 384H128A32 32 0 0 1 96 352V168A32 32 0 0 1 128 136Z"/>
+<path fill="#7C6CF4" stroke="#7C6CF4" stroke-width="16" stroke-linejoin="round" d="M234 244V316L296 280Z"/></g>
+<text x="340" y="190" font-family="Segoe UI, Arial, sans-serif" font-weight="700" font-size="128" fill="#F0F6FC">Ludex</text>
+<text x="344" y="248" font-family="Segoe UI, Arial, sans-serif" font-size="30" fill="#9198A1">Launch games and open their save, config and install folders.</text>
+</svg>
