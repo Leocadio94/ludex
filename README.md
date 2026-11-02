@@ -107,9 +107,15 @@ Pick a game to see **Launch Game** and one row per save, config and install fold
 
 ## Language
 
-English is the default. The Flow Launcher plugin and the Command Palette extension also speak Brazilian
-Portuguese: Flow follows its own language setting, Command Palette follows the Windows display language.
-Raycast supports only US English in extensions. There is a Portuguese version of this page:
+Ludex is available in two languages for now: **English** and **Brazilian Portuguese**.
+
+| Launcher | English | Português (Brasil) | Chosen by |
+|---|---|---|---|
+| Flow Launcher | yes | yes | Flow's own language setting, applied live |
+| Command Palette | yes | yes | the Windows display language, read when the extension starts (run `Reload` after changing it) |
+| Raycast | yes | no | English only: Raycast does not support localisation in extensions |
+
+Any other language falls back to English. There is a Portuguese version of this page:
 [README.pt-BR.md](README.pt-BR.md).
 
 ## How it works

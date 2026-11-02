@@ -110,18 +110,21 @@ npm run dev
 | Reescanear as lojas | `lx !games` | **Ludex: Refresh installed games** | **Refresh Installed Games** |
 | Baixar o banco de novo | `lx !refresh` | **Ludex: Refresh game database** | **Refresh Game Database** |
 
-Escolha um jogo para ver **Launch Game** e uma linha para cada pasta de save, configuração e instalação. Os nomes
-dos comandos aparecem em inglês, exceto onde o [Idioma](#idioma) diz o contrário.
+Escolha um jogo para ver **Launch Game** (**Iniciar jogo**, em português) e uma linha para cada pasta de save,
+configuração e instalação. Os nomes dos comandos acima estão em inglês; veja [Idioma](#idioma) para saber onde
+eles aparecem traduzidos.
 
 ## Idioma
 
-O inglês é o idioma padrão em todas as versões.
+Por enquanto o Ludex está disponível em dois idiomas: **inglês** e **português do Brasil**.
 
-| Launcher | Português (Brasil) |
-|---|---|
-| Flow Launcher | Disponível: os textos seguem o idioma escolhido no Flow (Settings > General > Language) |
-| Command Palette | Disponível: segue o idioma de exibição do Windows (rode `Reload` depois de trocar) |
-| Raycast | Não é possível: o Raycast só suporta inglês dos EUA em extensões |
+| Launcher | Inglês | Português (Brasil) | Quem escolhe o idioma |
+|---|---|---|---|
+| Flow Launcher | sim | sim | a configuração de idioma do próprio Flow (Settings > General > Language), aplicada na hora |
+| Command Palette | sim | sim | o idioma de exibição do Windows, lido quando a extensão inicia (rode `Reload` depois de trocar) |
+| Raycast | sim | não | só inglês: o Raycast não suporta localização em extensões |
+
+Qualquer outro idioma cai para o inglês.
 
 ## Como funciona
 

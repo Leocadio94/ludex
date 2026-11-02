@@ -2,7 +2,8 @@
 
 Open items that are not part of the current phase. Move each to an issue once someone owns it.
 
-- **Command Palette translation check**: the Command Palette extension is translated but the Windows display language reaching the extension process is untested, and the manifest `DisplayName` and `Description` in `Package.appxmanifest` are still English.
+- **Command Palette manifest text**: `DisplayName` and `Description` in `Package.appxmanifest` are still English;
+  translating them needs Windows resource files.
 - **Flow Launcher publishing**: `.github/workflows/release-flow.yml` builds a zip on a `flow-v*` tag but has never run. Needs a public repo, a tag matching `plugin.json` Version, then a submission to the Flow plugin store (a pull request to the Flow Launcher plugin manifest repository; check its current requirements first). The plugin ID must not change.
 - **Command Palette publishing**: replace the template `Identity/@Publisher` in `Package.appxmanifest`, then choose
   WinGet (Inno Setup, see `docs/reference/cmdpal-template`) or the Microsoft Store. Copy the publish-extension
