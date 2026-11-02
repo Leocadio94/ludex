@@ -10,19 +10,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
 
     private PluginInitContext _context = null!;
     private Settings _settings = null!;
-    private ManifestStore _manifest = null!;
-    private GameDetector _detector = null!;
-
-    private readonly object _gate = new();
-    private Task? _loading;
-
-    private volatile bool _ready;
-    private string _status = "Starting...";
-    private string? _error;
-
-    private Dictionary<string, IndexedGame> _index = new();
-    private List<GameWithPaths> _games = new();
-    private Dictionary<string, GameWithPaths> _bySlug = new(StringComparer.Ordinal);
+    private GameCatalog _catalog = null!;
 
     #region Lifecycle
 
@@ -33,71 +21,24 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
 
         var cacheDir = context.CurrentPluginMetadata.PluginCacheDirectoryPath;
 
-        _manifest = new ManifestStore(
+        var manifest = new ManifestStore(
             cacheDir,
             _settings,
             (url, dest, report, token) => context.API.HttpDownloadAsync(url, dest, report, token),
             () => context.API.SaveSettingJsonStorage<Settings>());
 
-        _detector = new GameDetector(
-            cacheDir,
-            _settings,
-            (message, e) => context.API.LogException(nameof(Main), message, e));
+        var logError = (string message, Exception e) => context.API.LogException(nameof(Main), message, e);
+        var detector = new GameDetector(cacheDir, _settings, logError);
+
+        _catalog = new GameCatalog(manifest, detector, _settings, logError);
 
         // Loading the manifest can take seconds on a cold start; InitAsync blocks Flow's
         // startup, so kick it off and let QueryAsync wait on it instead.
-        StartLoad(false, false);
+        _catalog.StartLoad(false, false);
         return Task.CompletedTask;
     }
 
-    public Task ReloadDataAsync() => StartLoad(false, true);
-
-    private Task StartLoad(bool forceManifest, bool forceGames, Action<double>? onProgress = null,
-        CancellationToken token = default)
-    {
-        lock (_gate)
-        {
-            if (_loading is { IsCompleted: false }) return _loading;
-            _loading = Task.Run(() => LoadCoreAsync(forceManifest, forceGames, onProgress, token), token);
-            return _loading;
-        }
-    }
-
-    private async Task LoadCoreAsync(bool forceManifest, bool forceGames, Action<double>? onProgress,
-        CancellationToken token)
-    {
-        _ready = false;
-        _error = null;
-
-        try
-        {
-            _index = await _manifest.LoadAsync(forceManifest, s => _status = s, onProgress, token)
-                .ConfigureAwait(false);
-
-            _status = "Detecting installed games...";
-            onProgress?.Invoke(85);
-            var installed = await _detector.DetectAsync(forceGames, token).ConfigureAwait(false);
-
-            _status = "Matching against the database...";
-            onProgress?.Invoke(95);
-            var games = Matcher.Match(installed, _index, _settings.ShowUnmatchedGames);
-
-            _games = games;
-            _bySlug = games.ToDictionary(g => g.Slug, StringComparer.Ordinal);
-            _ready = true;
-            _status = $"{games.Count} games";
-            onProgress?.Invoke(100);
-        }
-        catch (OperationCanceledException)
-        {
-            _status = "Cancelled";
-        }
-        catch (Exception e)
-        {
-            _error = e.Message;
-            _context.API.LogException(nameof(Main), "Failed to load game data", e);
-        }
-    }
+    public Task ReloadDataAsync() => _catalog.StartLoad(false, true);
 
     #endregion
 
@@ -107,14 +48,14 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
     {
         var search = query.Search.Trim();
 
-        if (!_ready)
+        if (!_catalog.Ready)
         {
             // Give the background load a chance to finish so the common case needs no
             // second keystroke; fall back to a status line when it is still downloading.
-            var loading = StartLoad(false, false);
+            var loading = _catalog.StartLoad(false, false);
             await Task.WhenAny(loading, Task.Delay(2500, CancellationToken.None)).ConfigureAwait(false);
 
-            if (!_ready) return StatusResults();
+            if (!_catalog.Ready) return StatusResults();
         }
 
         if (search.StartsWith(DrillPrefix, StringComparison.Ordinal))
@@ -128,17 +69,17 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
 
     private List<Result> StatusResults()
     {
-        if (_error is not null)
+        if (_catalog.Error is { } error)
         {
-            return Single("Failed to load game data", _error, Icons.Missing, _ =>
+            return Single("Failed to load game data", error, Icons.Missing, _ =>
             {
-                StartLoad(true, true);
+                _catalog.StartLoad(true, true);
                 _context.API.ShowMsg("Ludex", "Retrying...");
                 return false;
             });
         }
 
-        return Single("Loading game database...", _status, Icons.App, _ =>
+        return Single("Loading game database...", _catalog.Status, Icons.App, _ =>
         {
             _context.API.ReQuery();
             return false;
@@ -148,10 +89,11 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
     private List<Result> GameResults(Query query, string search)
     {
         var results = new List<Result>();
+        var games = _catalog.Games;
 
         if (search.Length > 0)
         {
-            foreach (var game in _games)
+            foreach (var game in games)
             {
                 var match = _context.API.FuzzySearch(search, game.Name);
                 if (!match.Success && !game.DetectedName.Equals(game.Name, StringComparison.OrdinalIgnoreCase))
@@ -174,10 +116,10 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
         // bump, letting Flow float the games you open most to the top.
         var alphabetical = _settings.DefaultSort == GameSort.Alphabetical;
         var ordered = alphabetical
-            ? _games.OrderBy(g => g.Name, StringComparer.OrdinalIgnoreCase)
-            : _games.AsEnumerable();
+            ? games.OrderBy(g => g.Name, StringComparer.OrdinalIgnoreCase)
+            : games.AsEnumerable();
 
-        var rank = _games.Count;
+        var rank = games.Count;
         foreach (var game in ordered.Take(_settings.MaxResults))
         {
             var score = alphabetical ? rank-- : 100;
@@ -226,7 +168,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
         var slug = space < 0 ? rest : rest[..space];
         var filter = space < 0 ? "" : rest[(space + 1)..].Trim();
 
-        if (!_bySlug.TryGetValue(slug, out var game))
+        if (!_catalog.TryGetGame(slug, out var game))
             return Single("Game not found", "It may have been removed since the last refresh.", Icons.Missing, _ =>
             {
                 _context.API.ChangeQuery($"{ActionKeyword(query)} ");
@@ -255,7 +197,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
             results.Add(launch);
 
         var score = 900;
-        foreach (var entry in BuildEntries(game))
+        foreach (var entry in FolderEntries.Build(game))
         {
             if (filter.Length > 0 && !_context.API.FuzzySearch(filter, entry.Title).Success) continue;
             results.Add(FolderResult(entry, score--));
@@ -334,8 +276,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
     /// </summary>
     private async Task RunRefreshAsync(bool manifest, bool games, string caption)
     {
-        _ready = false;
-        _status = caption;
+        _catalog.Begin(caption);
 
         using var cts = new CancellationTokenSource();
 
@@ -346,7 +287,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
                 async report =>
                 {
                     report(0);
-                    await StartLoad(manifest, games, report, cts.Token).ConfigureAwait(false);
+                    await _catalog.StartLoad(manifest, games, report, cts.Token).ConfigureAwait(false);
                 },
                 cts.Cancel);
         }
@@ -359,7 +300,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
 
         _context.API.ShowMsg(
             "Ludex",
-            _error is null ? $"Ready — {_games.Count} games" : $"Failed: {_error}",
+            _catalog.Error is null ? $"Ready — {_catalog.Games.Count} games" : $"Failed: {_catalog.Error}",
             Icons.App);
     }
 
@@ -374,7 +315,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
 
         var scored = new List<(int Score, string Name, IList<int> Highlight)>();
 
-        foreach (var (name, entry) in _index)
+        foreach (var (name, entry) in _catalog.Index)
         {
             // Alias-only entries would show up as duplicates of their canonical entry.
             if (entry.Files.Count == 0) continue;
@@ -388,7 +329,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
             .Take(_settings.MaxResults)
             .Select(s =>
             {
-                var game = ManifestOnlyGame(s.Name);
+                var game = _catalog.ManifestOnlyGame(s.Name);
                 return new Result
                 {
                     Title = s.Name,
@@ -399,7 +340,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
                     ContextData = game,
                     Action = _ =>
                     {
-                        _bySlug[game.Slug] = game;
+                        _catalog.Register(game);
                         _context.API.ChangeQuery($"{ActionKeyword(query)} {DrillPrefix}{game.Slug} ");
                         return false;
                     }
@@ -408,168 +349,21 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
             .ToList();
     }
 
-    /// <summary>Builds a GameWithPaths for a manifest entry with no local installation.</summary>
-    private GameWithPaths ManifestOnlyGame(string manifestName)
-    {
-        var entry = _index[manifestName];
-        var game = new GameWithPaths
-        {
-            Slug = "db-" + Matcher.NormalizeName(manifestName).Replace(' ', '_'),
-            Name = manifestName,
-            DetectedName = manifestName,
-            Matched = true
-        };
-
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var file in entry.Files)
-        {
-            if (file.Os is not null && file.Os != PathResolver.CurrentOs) continue;
-
-            foreach (var resolved in PathResolver.ResolveAndExpand(file.Template, null))
-            {
-                if (!seen.Add(resolved)) continue;
-
-                var rp = new ResolvedPath
-                {
-                    Path = resolved,
-                    Exists = Directory.Exists(resolved) || File.Exists(resolved),
-                    Tags = file.Tags,
-                    Os = file.Os,
-                    Store = file.Store
-                };
-
-                if (file.Tags.HasFlag(PathTags.Save)) game.SavePaths.Add(rp);
-                if (file.Tags.HasFlag(PathTags.Config)) game.ConfigPaths.Add(rp);
-            }
-        }
-
-        return game;
-    }
-
     #endregion
 
     #region Folder entries
 
-    private sealed class FolderEntry
+    private static string FolderIcon(FolderEntry entry)
     {
-        public required string Title { get; set; }
-
-        /// <summary>The directory Enter will open.</summary>
-        public required string Path { get; init; }
-
-        public required bool Exists { get; init; }
-        public required string Icon { get; init; }
-
-        /// <summary>The manifest paths that resolved here — one folder can come from several.</summary>
-        public List<string> Sources { get; } = new();
+        if (!entry.Exists) return Icons.Missing;
+        if (entry.IsInstall) return Icons.Install;
+        return entry.Tags == PathTags.Config ? Icons.Config : Icons.Folder;
     }
-
-    /// <summary>
-    /// Builds the folder list for a game, grouped by the directory that will actually be
-    /// opened. The manifest often lists several files inside one folder (Crimson Desert has
-    /// three save entries in the same directory), and opening a file means opening its parent,
-    /// so without this the list shows the same destination several times over.
-    /// </summary>
-    private static List<FolderEntry> BuildEntries(GameWithPaths game)
-    {
-        var groups = new Dictionary<string, (PathTags Tags, string? Os, string? Store, List<string> Sources)>(
-            StringComparer.OrdinalIgnoreCase);
-
-        var distinct = game.SavePaths
-            .Concat(game.ConfigPaths)
-            .GroupBy(p => p.Path, StringComparer.OrdinalIgnoreCase)
-            .Select(g => g.First());
-
-        foreach (var p in distinct)
-        {
-            var dir = TargetDirectory(p.Path);
-
-            if (groups.TryGetValue(dir, out var existing))
-            {
-                groups[dir] = (existing.Tags | p.Tags, existing.Os ?? p.Os, existing.Store ?? p.Store,
-                    existing.Sources);
-            }
-            else
-            {
-                groups[dir] = (p.Tags, p.Os, p.Store, new List<string>());
-            }
-
-            groups[dir].Sources.Add(p.Path);
-        }
-
-        var entries = new List<FolderEntry>();
-
-        foreach (var (dir, group) in groups)
-        {
-            var exists = Directory.Exists(dir);
-            var entry = new FolderEntry
-            {
-                Title = FolderTitle(group.Tags, group.Os, group.Store),
-                Path = dir,
-                Exists = exists,
-                Icon = exists
-                    ? group.Tags == PathTags.Config ? Icons.Config : Icons.Folder
-                    : Icons.Missing
-            };
-
-            entry.Sources.AddRange(group.Sources);
-            entries.Add(entry);
-        }
-
-        if (!string.IsNullOrEmpty(game.InstallPath))
-        {
-            var exists = Directory.Exists(game.InstallPath);
-            entries.Add(new FolderEntry
-            {
-                Title = "Open Install Folder",
-                Path = game.InstallPath,
-                Exists = exists,
-                Icon = exists ? Icons.Install : Icons.Missing
-            });
-        }
-
-        Disambiguate(entries);
-        return entries;
-    }
-
-    /// <summary>
-    /// Two folders can legitimately produce the same title — a per-account save directory and
-    /// the shared one above it, for instance. Append the folder name so the rows differ by
-    /// something other than a truncated path.
-    /// </summary>
-    private static void Disambiguate(List<FolderEntry> entries)
-    {
-        foreach (var collision in entries.GroupBy(e => e.Title).Where(g => g.Count() > 1))
-        {
-            foreach (var entry in collision)
-            {
-                var leaf = Path.GetFileName(entry.Path);
-                if (leaf.Length > 0) entry.Title = $"{entry.Title} — {leaf}";
-            }
-        }
-    }
-
-    private static string FolderTitle(PathTags tags, string? os, string? store)
-    {
-        var name = tags.HasFlag(PathTags.Save) && tags.HasFlag(PathTags.Config)
-            ? "Save & Config Folder"
-            : tags.HasFlag(PathTags.Save) ? "Save Folder" : "Config Folder";
-
-        var parts = new List<string>();
-        if (os is not null) parts.Add(Capitalize(os));
-        if (store is not null) parts.Add(Capitalize(store));
-
-        return parts.Count > 0 ? $"Open {name} ({string.Join(", ", parts)})" : $"Open {name}";
-    }
-
-    private static string Capitalize(string s) =>
-        s.Length == 0 ? s : char.ToUpperInvariant(s[0]) + s[1..];
 
     private Result FolderResult(FolderEntry entry, int score)
     {
-        var target = TargetDirectory(entry.Path);
-        var fallback = Directory.Exists(target) ? null : NearestExistingAncestor(target);
+        var target = FolderEntries.TargetDirectory(entry.Path);
+        var fallback = Directory.Exists(target) ? null : FolderEntries.NearestExistingAncestor(target);
 
         // Say up front what Enter will actually do, rather than letting the user press it and
         // watch nothing happen.
@@ -586,7 +380,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
             Title = entry.Title,
             SubTitle = subtitle,
             SubTitleToolTip = tooltip,
-            IcoPath = entry.Icon,
+            IcoPath = FolderIcon(entry),
             Score = score,
             ContextData = entry,
             Action = _ => OpenFolder(entry.Path)
@@ -632,7 +426,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
 
     private bool OpenFolder(string path)
     {
-        var target = TargetDirectory(path);
+        var target = FolderEntries.TargetDirectory(path);
 
         if (Directory.Exists(target))
         {
@@ -643,7 +437,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
         // A save folder that does not exist yet is the normal case for a game that has never
         // been launched. Opening the closest existing parent is more useful than an error,
         // and it puts the user where the folder will appear.
-        var ancestor = NearestExistingAncestor(target);
+        var ancestor = FolderEntries.NearestExistingAncestor(target);
         if (ancestor is null)
         {
             _context.API.ShowMsgError("Folder does not exist", target);
@@ -653,30 +447,6 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
         _context.API.OpenDirectory(ancestor);
         _context.API.ShowMsg("Folder not created yet", $"Opened {ancestor} instead.", Icons.Missing);
         return true;
-    }
-
-    private static string? NearestExistingAncestor(string path)
-    {
-        var current = Path.GetDirectoryName(path);
-
-        while (!string.IsNullOrEmpty(current))
-        {
-            if (Directory.Exists(current)) return current;
-            current = Path.GetDirectoryName(current);
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// The manifest points at files as often as at folders. Opening the parent is what the
-    /// user wants either way.
-    /// </summary>
-    private static string TargetDirectory(string path)
-    {
-        if (Directory.Exists(path)) return path;
-        if (File.Exists(path)) return Path.GetDirectoryName(path) ?? path;
-        return Path.HasExtension(path) ? Path.GetDirectoryName(path) ?? path : path;
     }
 
     #endregion
@@ -695,7 +465,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
                 if (launch is not null) results.Add(launch);
 
                 var score = 100;
-                foreach (var entry in BuildEntries(game)) results.Add(FolderResult(entry, score--));
+                foreach (var entry in FolderEntries.Build(game)) results.Add(FolderResult(entry, score--));
                 if (results.Count == 0) results.Add(NoPathsResult(game));
                 return results;
             }
