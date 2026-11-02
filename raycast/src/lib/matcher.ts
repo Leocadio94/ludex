@@ -97,6 +97,7 @@ export function matchGames(
       name: manifestName,
       store: game.store,
       storeGameId: game.storeGameId,
+      launchTarget: game.launchTarget,
       savePaths: deduplicatePaths(savePaths),
       configPaths: deduplicatePaths(configPaths),
     });

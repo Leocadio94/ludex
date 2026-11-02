@@ -51,6 +51,9 @@ export async function detectEpicGames(): Promise<InstalledGame[]> {
           store: "epic",
           storeGameId: manifest.CatalogItemId ?? manifest.AppName,
           installPath: manifest.InstallLocation,
+          launchTarget: manifest.AppName
+            ? `com.epicgames.launcher://apps/${manifest.AppName}?action=launch&silent=true`
+            : undefined,
         });
       } catch { /* skip malformed manifest */ }
     }

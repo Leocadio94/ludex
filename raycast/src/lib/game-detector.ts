@@ -6,8 +6,8 @@ import { detectXboxGames } from "./detectors/xbox";
 import type { InstalledGame } from "./types";
 
 const GAMES_CACHE_MAX_AGE_MS = 60 * 60 * 1000; // 1 hour
-const CACHE_KEY_GAMES = "installed-games-v2";
-const CACHE_KEY_GAMES_TIMESTAMP = "installed-games-v2-timestamp";
+const CACHE_KEY_GAMES = "installed-games-v3";
+const CACHE_KEY_GAMES_TIMESTAMP = "installed-games-v3-timestamp";
 const cache = new Cache({ capacity: 2 * 1024 * 1024 });
 
 function isCacheValid(): boolean {

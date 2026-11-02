@@ -1,12 +1,15 @@
 import { Action, ActionPanel, Icon, List, showToast, Toast } from "@raycast/api";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { loadManifest, refreshManifest } from "./lib/manifest";
 import type { IndexedGame, ManifestIndex } from "./lib/types";
+
+const MAX_RESULTS = 50;
 
 export default function Command() {
   const [manifest, setManifest] = useState<ManifestIndex | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [statusMsg, setStatusMsg] = useState("Loading game database...");
+  const [query, setQuery] = useState("");
 
   async function load(forceRefresh = false) {
     setIsLoading(true);
@@ -30,24 +33,43 @@ export default function Command() {
     load();
   }, []);
 
-  const entries: [string, IndexedGame][] = manifest ? Object.entries(manifest) : [];
+  const names = useMemo(() => (manifest ? Object.keys(manifest) : []), [manifest]);
+
+  // Rendering the whole database (~14k rows) exhausts the extension's memory, so only matches are mounted.
+  const visible = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    if (!manifest || !needle) return [];
+    const starts: string[] = [];
+    const contains: string[] = [];
+    for (const name of names) {
+      const lower = name.toLowerCase();
+      if (lower.startsWith(needle)) starts.push(name);
+      else if (lower.includes(needle)) contains.push(name);
+      if (starts.length >= MAX_RESULTS) break;
+    }
+    return [...starts, ...contains].slice(0, MAX_RESULTS);
+  }, [manifest, names, query]);
 
   return (
     <List
       isLoading={isLoading}
+      filtering={false}
+      onSearchTextChange={setQuery}
       searchBarPlaceholder="Search all games..."
       navigationTitle={
-        isLoading ? statusMsg : `${entries.length.toLocaleString()} games in database`
+        isLoading ? statusMsg : `${names.length.toLocaleString()} games in database`
       }
     >
-      {entries.map(([name, game]) => (
-        <GameEntry
-          key={name}
-          name={name}
-          game={game}
-          onRefresh={() => load(true)}
+      {!isLoading && visible.length === 0 && (
+        <List.EmptyView
+          title={query.trim() ? "No games found" : "Type to search the game database"}
+          description={query.trim() ? undefined : `${names.length.toLocaleString()} games indexed`}
         />
-      ))}
+      )}
+      {manifest &&
+        visible.map((name) => (
+          <GameEntry key={name} name={name} game={manifest[name]} onRefresh={() => load(true)} />
+        ))}
     </List>
   );
 }

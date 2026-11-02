@@ -14,6 +14,7 @@ import os from "os";
 import path from "path";
 import { useEffect, useState } from "react";
 import { detectInstalledGames } from "./lib/game-detector";
+import { launchGame } from "./lib/launcher";
 import { loadManifest, refreshManifest } from "./lib/manifest";
 import { matchGames } from "./lib/matcher";
 import type { GameWithPaths, ResolvedPath, Store } from "./lib/types";
@@ -163,6 +164,17 @@ function GameListItem({
       accessories={accessories}
       actions={
         <ActionPanel>
+          {game.launchTarget && (
+            <ActionPanel.Section>
+              <Action
+                title="Launch Game"
+                icon={Icon.Play}
+                onAction={() => launchGame(game.launchTarget!).catch((err) =>
+                  showToast({ style: Toast.Style.Failure, title: "Could not launch game", message: String(err) }),
+                )}
+              />
+            </ActionPanel.Section>
+          )}
           <SaveActions paths={game.savePaths} />
           <ConfigActions paths={game.configPaths} />
           <ActionPanel.Section>

@@ -188,6 +188,7 @@ export async function detectSteamGames(): Promise<InstalledGame[]> {
         storeGameId: acf.appid,
         installPath: path.join(libraryPath, "common", acf.installdir),
         storeRoot: path.dirname(libraryPath),
+        launchTarget: `steam://rungameid/${acf.appid}`,
       });
     }
   }

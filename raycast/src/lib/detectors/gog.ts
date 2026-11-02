@@ -1,5 +1,29 @@
 import { execSync } from "child_process";
+import * as fs from "fs";
+import * as path from "path";
 import type { InstalledGame } from "../types";
+
+// goggame-<id>.info lists play tasks; running the primary executable works without GOG Galaxy.
+function findPrimaryPlayTask(installPath: string): string | undefined {
+  try {
+    const info = fs.readdirSync(installPath).find((f) => /^goggame-.*\.info$/i.test(f));
+    if (!info) return undefined;
+    const raw = fs.readFileSync(path.join(installPath, info), "utf-8").replace(/^﻿/, "");
+    const tasks: { type?: string; path?: string; isPrimary?: boolean }[] = JSON.parse(raw).playTasks ?? [];
+
+    let first: string | undefined;
+    for (const task of tasks) {
+      if (task.type !== "FileTask" || !task.path) continue;
+      const exe = path.join(installPath, task.path);
+      if (!fs.existsSync(exe)) continue;
+      if (task.isPrimary) return exe;
+      first ??= exe;
+    }
+    return first;
+  } catch {
+    return undefined;
+  }
+}
 
 interface GogGame {
   id: string;
@@ -59,5 +83,6 @@ export async function detectGogGames(): Promise<InstalledGame[]> {
     store: "gog" as const,
     storeGameId: g.id || undefined,
     installPath: g.installPath,
+    launchTarget: findPrimaryPlayTask(g.installPath),
   }));
 }

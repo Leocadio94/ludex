@@ -2,11 +2,10 @@
 
 Open items that are not part of the current phase. Move each to an issue once someone owns it.
 
-- **Raycast: Onimusha missing**: "Onimusha: Way of the Sword" shows in Flow and Command Palette but not in Raycast,
-  even after the `<root>` fix and a refresh. Other games (Enshrouded, Ender Lilies) appear, so it is specific to
-  this game's manifest entry or detection. Not investigated yet.
-- **Raycast icon**: Raycast may still show the old Game Saves Manager icon next to the Ludex one; likely the old
-  extension is still installed in Raycast. Check after uninstalling it.
+- **Translations (PT-BR)**: check which front ends can localise their own text and translate those; keep English as
+  the default everywhere else. Starting points, none verified yet: Flow plugins can ship `Languages/*.xaml`
+  resource files; Command Palette extensions are packaged apps, so resources (`.resw`) may apply; Raycast has no
+  localisation mechanism that we know of. Also write a PT-BR root README (`README.pt-BR.md`) and link both ways.
 - **Command Palette publishing**: replace the template `Identity/@Publisher` in `Package.appxmanifest`, then choose
   WinGet (Inno Setup, see `docs/reference/cmdpal-template`) or the Microsoft Store. Copy the publish-extension
   skill to `.claude/skills/` when starting.

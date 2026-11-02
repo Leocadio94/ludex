@@ -4,6 +4,7 @@ import type { InstalledGame } from "../types";
 interface XboxGame {
   name: string;
   installPath: string;
+  launchTarget?: string;
 }
 
 function runPowerShell(script: string): string {
@@ -30,7 +31,9 @@ foreach ($pkg in $packages) {
     [xml]$xml = Get-Content $manifestFile -ErrorAction Stop
     $displayName = $xml.Package.Properties.DisplayName
     if (-not $displayName -or $displayName -match '^ms-resource:') { continue }
-    $results += [PSCustomObject]@{ name = $displayName; path = $pkg.InstallLocation }
+    $appId = @($xml.Package.Applications.Application)[0].Id
+    $launch = if ($appId) { "shell:appsFolder\\$($pkg.PackageFamilyName)!$appId" } else { $null }
+    $results += [PSCustomObject]@{ name = $displayName; path = $pkg.InstallLocation; launch = $launch }
   } catch { continue }
 }
 
@@ -46,7 +49,11 @@ $results | ConvertTo-Json -Compress -Depth 1
     return items
       .filter((item): item is Record<string, string> => !!item && typeof item === "object")
       .filter((item) => item.name && item.path)
-      .map((item) => ({ name: String(item.name), installPath: String(item.path) }));
+      .map((item) => ({
+        name: String(item.name),
+        installPath: String(item.path),
+        launchTarget: item.launch ? String(item.launch) : undefined,
+      }));
   } catch {
     return [];
   }
@@ -59,5 +66,6 @@ export async function detectXboxGames(): Promise<InstalledGame[]> {
     name: g.name,
     store: "xbox" as const,
     installPath: g.installPath,
+    launchTarget: g.launchTarget,
   }));
 }
