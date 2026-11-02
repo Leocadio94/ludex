@@ -20,7 +20,7 @@ A [Flow Launcher](https://www.flowlauncher.com) C# plugin. Pipeline:
 **detect installed games → load manifest index → match → resolve paths → display**.
 
 The plugin is in-process and persistent: the manifest index is loaded once per Flow session
-and stays in `Main._index`, so typing in the query box does no I/O.
+and stays in `GameCatalog` (Core), so typing in the query box does no I/O.
 
 ### Data source
 
@@ -61,7 +61,7 @@ launcher that appeared to do nothing:
 - **Folders that do not exist yet.** A game that has never been launched has no save folder,
   which is normal, not an error. `OpenFolder` walks up to the nearest existing ancestor and
   opens that instead; `FolderResult` says so in the subtitle before the user presses Enter.
-- **Repeated rows.** `BuildEntries` groups by the directory Enter will actually open, not by
+- **Repeated rows.** `FolderEntries.Build` (Core) groups by the directory Enter will actually open, not by
   manifest path. The manifest commonly lists several files inside one folder — Crimson Desert
   has three save entries in the same directory — and opening a file opens its parent, so
   without grouping the same destination appears several times. `Disambiguate` then appends the
@@ -154,3 +154,17 @@ pipeline but not the code. Differences that were deliberate:
 - Manifest `alias` entries are used; the Raycast version parses them into a type it never fills.
 - The V8 heap limit that forced the streaming design there does not apply here, but the
   streaming parser was kept because it is also the fastest option.
+
+## Command Palette extension (`src/CommandPalette/`)
+
+Front end over the same Core; pages mirror the Flow routes (`GamesPage` → `GamePage`, `SearchAllPage`, `RefreshCommand`).
+
+- Runs out of process as a packaged COM server. Build alone does not update it: deploy from Visual Studio
+  (Debug | x64), then run `Reload` in Command Palette. The solution needs the `Deploy.0` entries for this
+  project, which `dotnet sln add` omits.
+- Release publishes trimmed/AOT, so anything added to Core must stay trim-safe (source-generated JSON only).
+- The toolkit's fuzzy matcher is internal; `Helpers/Fuzzy.cs` is ours.
+- Command Palette has no usage ranking inside extension pages, so "most used first" is `UsageTracker`
+  (launch / open folder), unlike Flow's `AddSelectedCount`.
+- Settings are the toolkit's `JsonSettingsManager`; `SettingsManager.ApplyTo` copies them into `Ludex.Core.Settings`.
+  `ManifestUpdatedUtcTicks` is persisted separately (`cache/manifest-updated.txt`).

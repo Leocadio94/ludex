@@ -2,26 +2,59 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.IO;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using CoreSettings = Ludex.Core.Settings;
+using GameSort = Ludex.Core.GameSort;
 
 namespace Ludex;
 
 internal sealed partial class SettingsManager : JsonSettingsManager
 {
-    private static readonly string _namespace = "Ludex";
+    private const string Namespace = "Ludex";
+    private const string SortUsage = "usage";
+    private const string SortAlphabetical = "alpha";
 
-    private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
+    private static string Namespaced(string propertyName) => $"{Namespace}.{propertyName}";
 
-    // TODO: Add your settings here. For example:
-    // private readonly ToggleSetting _myToggle = new(
-    //     Namespaced(nameof(MyToggle)),
-    //     "My toggle setting",
-    //     "Description of my toggle setting",
-    //     false);
+    private readonly ChoiceSetSetting _defaultSort = new(
+        Namespaced("DefaultSort"),
+        "Default order",
+        "Most used first floats the games you open often to the top. Alphabetical is a fixed A-Z list.",
+        [
+            new ChoiceSetSetting.Choice("Most used first", SortUsage),
+            new ChoiceSetSetting.Choice("Alphabetical (A-Z)", SortAlphabetical),
+        ]);
 
-    // TODO: Add accessors for each setting. For example:
-    // public bool MyToggle => _myToggle.Value;
+    private readonly ToggleSetting _detectSteam = new(Namespaced("DetectSteam"), "Scan Steam", "Applies on the next refresh.", true);
+    private readonly ToggleSetting _detectGog = new(Namespaced("DetectGog"), "Scan GOG", "Applies on the next refresh.", true);
+    private readonly ToggleSetting _detectEpic = new(Namespaced("DetectEpic"), "Scan Epic Games", "Applies on the next refresh.", true);
+    private readonly ToggleSetting _detectXbox = new(Namespaced("DetectXbox"), "Scan Xbox / Game Pass", "Applies on the next refresh.", true);
+
+    private readonly ToggleSetting _showUnmatched = new(
+        Namespaced("ShowUnmatchedGames"),
+        "Show games with no manifest entry",
+        "List installed games the database does not know about, with just their install folder.",
+        true);
+
+    private readonly TextSetting _manifestTtlDays = new(
+        Namespaced("ManifestTtlDays"),
+        "Game database refresh interval (days)",
+        "How often the Ludusavi manifest is re-downloaded automatically.",
+        "7");
+
+    private readonly TextSetting _installedTtlMinutes = new(
+        Namespaced("InstalledGamesTtlMinutes"),
+        "Installed games cache lifetime (minutes)",
+        "How long the detected-games list is reused before re-scanning the stores.",
+        "60");
+
+    private readonly TextSetting _maxResults = new(
+        Namespaced("MaxResults"),
+        "Maximum search results",
+        "Cap on how many games \"Search all games\" shows at once.",
+        "50");
 
     internal static string SettingsJsonPath()
     {
@@ -35,12 +68,38 @@ internal sealed partial class SettingsManager : JsonSettingsManager
     {
         FilePath = SettingsJsonPath();
 
-        // TODO: Register your settings here. For example:
-        // Settings.Add(_myToggle);
+        _defaultSort.Value = SortUsage;
+
+        Settings.Add(_defaultSort);
+        Settings.Add(_detectSteam);
+        Settings.Add(_detectGog);
+        Settings.Add(_detectEpic);
+        Settings.Add(_detectXbox);
+        Settings.Add(_showUnmatched);
+        Settings.Add(_manifestTtlDays);
+        Settings.Add(_installedTtlMinutes);
+        Settings.Add(_maxResults);
 
         // Load settings from file upon initialization
         LoadSettings();
 
         Settings.SettingsChanged += (_, _) => SaveSettings();
     }
+
+    /// <summary>Copies the current values into the settings object Ludex.Core reads.</summary>
+    public void ApplyTo(CoreSettings core)
+    {
+        core.DefaultSort = _defaultSort.Value == SortAlphabetical ? GameSort.Alphabetical : GameSort.Usage;
+        core.DetectSteam = _detectSteam.Value;
+        core.DetectGog = _detectGog.Value;
+        core.DetectEpic = _detectEpic.Value;
+        core.DetectXbox = _detectXbox.Value;
+        core.ShowUnmatchedGames = _showUnmatched.Value;
+        core.ManifestTtlDays = ParseInt(_manifestTtlDays.Value, 7, 1, 365);
+        core.InstalledGamesTtlMinutes = ParseInt(_installedTtlMinutes.Value, 60, 1, 10080);
+        core.MaxResults = ParseInt(_maxResults.Value, 50, 5, 500);
+    }
+
+    private static int ParseInt(string? text, int fallback, int min, int max) =>
+        int.TryParse(text, out var value) ? Math.Clamp(value, min, max) : fallback;
 }
