@@ -25,7 +25,7 @@ Changes to the stores or intervals apply on the next refresh.
 ## Typing `lx`
 
 Command Palette gives extensions no default alias. Set one yourself: Settings > Extensions > Ludex, alias on the
-"Ludex" command.
+"Ludex" command. Tick the option that makes the alias run directly, so typing `lx` opens Ludex without a space.
 
 ## Install
 

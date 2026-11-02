@@ -21,7 +21,7 @@ The extension is a packaged app, so its settings and cache live under
 ## Alias
 
 Command Palette gives extensions no way to ship a default alias. To type `lx`, open Settings > Extensions >
-Ludex and set the alias on the "Ludex" command.
+Ludex and set the alias on the "Ludex" command, with the direct option on so `lx` opens it without a space.
 
 ## Gotchas
 

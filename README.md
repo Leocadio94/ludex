@@ -26,6 +26,15 @@ Every PC game hides its saves somewhere different: `AppData\Roaming`, `AppData\L
 away. Open your launcher, type a game, and jump to its save folder, its config, its install directory, or just
 start the game.
 
+<p align="center">
+  <img src="docs/images/flow-games.png" alt="Ludex in Flow Launcher: installed games with their save and config counts" width="49%">
+  <img src="docs/images/flow-game.png" alt="A game in Flow Launcher: launch it, or open its save and install folders" width="49%">
+</p>
+<p align="center">
+  <img src="docs/images/cmdpal-games.png" alt="Ludex in Command Palette: installed games with a details pane listing every path" width="49%">
+  <img src="docs/images/cmdpal-search-all.png" alt="Searching the whole game database from Command Palette" width="49%">
+</p>
+
 ## Features
 
 - **Finds your games** in Steam, GOG, Epic Games and Xbox / Game Pass, straight from each store's own files.

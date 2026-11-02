@@ -5,7 +5,6 @@ Open items that are not part of the current phase. Move each to an issue once so
 - **Raycast `<root>`**: `raycast/src/lib/path-resolver.ts` uses `dirname(installPath)`, so Steam games whose
   only rule is `<root>/userdata/...` (Onimusha: Way of the Sword) end up with no paths and are dropped.
   Fix: `<root>` = the folder containing `steamapps`.
-- **README screenshots**: Flow and Command Palette captures in `docs/images/`, then add them to the root README.
 - **Command Palette publishing**: replace the template `Identity/@Publisher` in `Package.appxmanifest`, then choose
   WinGet (Inno Setup, see `docs/reference/cmdpal-template`) or the Microsoft Store. Copy the publish-extension
   skill to `.claude/skills/` when starting.
