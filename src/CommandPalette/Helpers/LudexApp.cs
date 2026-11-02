@@ -19,6 +19,8 @@ internal sealed class LudexApp
 
     public LudexApp()
     {
+        Texts.Culture = CultureInfo.CurrentUICulture;
+
         var dataDir = Utilities.BaseSettingsPath("Ludex");
         var cacheDir = Path.Combine(dataDir, "cache");
         Directory.CreateDirectory(cacheDir);

@@ -120,7 +120,7 @@ O inglês é o idioma padrão em todas as versões.
 | Launcher | Português (Brasil) |
 |---|---|
 | Flow Launcher | Disponível: os textos seguem o idioma escolhido no Flow (Settings > General > Language) |
-| Command Palette | Ainda não |
+| Command Palette | Disponível: segue o idioma de exibição do Windows (rode `Reload` depois de trocar) |
 | Raycast | Não é possível: o Raycast só suporta inglês dos EUA em extensões |
 
 ## Como funciona

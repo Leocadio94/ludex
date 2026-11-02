@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using static Ludex.Core.Texts;
 
 namespace Ludex;
 
@@ -32,11 +33,11 @@ internal sealed partial class RefreshPage : ListPage
     {
         _app = app;
         _manifest = manifest;
-        _caption = manifest ? "Downloading the game database" : "Re-detecting installed games";
+        _caption = T(manifest ? "Downloading the game database" : "Re-detecting installed games");
 
         Icon = manifest ? Icons.Download : Icons.Refresh;
-        Title = manifest ? "Refresh game database" : "Refresh installed games";
-        Name = "Open";
+        Title = T(manifest ? "Refresh game database" : "Refresh installed games");
+        Name = T("Open");
     }
 
     public override IListItem[] GetItems()
@@ -58,19 +59,19 @@ internal sealed partial class RefreshPage : ListPage
                 return [new ListItem(StartCommand())
                 {
                     Title = catalog.Error is null
-                        ? "Ready: " + catalog.Games.Count.ToString(CultureInfo.InvariantCulture) + " games"
-                        : "Refresh failed",
-                    Subtitle = catalog.Error ?? "Press Enter to refresh again",
+                        ? F("Ready: {0} games", catalog.Games.Count)
+                        : T("Refresh failed"),
+                    Subtitle = catalog.Error ?? T("Press Enter to refresh again"),
                     Icon = catalog.Error is null ? Icon : Icons.Missing,
                 }];
 
             default:
                 return [new ListItem(StartCommand())
                 {
-                    Title = _manifest ? "Download the game database now" : "Re-scan the installed games now",
-                    Subtitle = _manifest
+                    Title = T(_manifest ? "Download the game database now" : "Re-scan the installed games now"),
+                    Subtitle = T(_manifest
                         ? "Re-downloads the Ludusavi manifest (~16 MB), then re-detects games"
-                        : "Looks for newly installed or removed games in Steam, GOG, Epic and Xbox",
+                        : "Looks for newly installed or removed games in Steam, GOG, Epic and Xbox"),
                     Icon = Icon,
                 }];
         }
@@ -78,7 +79,7 @@ internal sealed partial class RefreshPage : ListPage
 
     private AnonymousCommand StartCommand() => new(Start)
     {
-        Name = "Refresh now",
+        Name = T("Refresh now"),
         Icon = Icon,
         Result = CommandResult.KeepOpen(),
     };

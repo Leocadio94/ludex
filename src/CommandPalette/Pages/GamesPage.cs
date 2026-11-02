@@ -4,6 +4,7 @@ using System.Linq;
 using Ludex.Core;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using static Ludex.Core.Texts;
 
 namespace Ludex;
 
@@ -16,8 +17,8 @@ internal sealed partial class GamesPage : ListPage
         _app = app;
         Icon = Icons.App;
         Title = "Ludex";
-        Name = "Open";
-        PlaceholderText = "Search installed games...";
+        Name = T("Open");
+        PlaceholderText = T("Search installed games...");
         ShowDetails = true;
 
         app.Catalog.Changed += Refresh;
@@ -50,7 +51,7 @@ internal sealed partial class GamesPage : ListPage
         {
             return new ListItem(new RefreshPage(_app, manifest: true))
             {
-                Title = "Failed to load game data",
+                Title = T("Failed to load game data"),
                 Subtitle = error,
                 Icon = Icons.Missing,
             };
@@ -58,7 +59,7 @@ internal sealed partial class GamesPage : ListPage
 
         return new ListItem(new NoOpCommand())
         {
-            Title = "Loading game database...",
+            Title = T("Loading game database..."),
             Subtitle = catalog.Status,
             Icon = Icons.App,
         };

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Ludex.Core;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using static Ludex.Core.Texts;
 
 namespace Ludex;
 
@@ -17,8 +18,8 @@ internal sealed partial class GamePage : ListPage
         _game = game;
         Icon = Icons.ForGame(game.IconPath, game.Matched);
         Title = game.Name;
-        Name = "Open";
-        PlaceholderText = "Filter actions...";
+        Name = T("Open");
+        PlaceholderText = T("Filter actions...");
     }
 
     public override IListItem[] GetItems()
@@ -29,7 +30,7 @@ internal sealed partial class GamePage : ListPage
         {
             items.Add(new ListItem(new LaunchGameCommand(_app, _game, target))
             {
-                Title = "Launch Game",
+                Title = T("Launch Game"),
                 Subtitle = GameLauncher.Describe(_game.Store, target),
                 Icon = Icons.ForGame(_game.IconPath, _game.Matched),
             });
@@ -42,8 +43,8 @@ internal sealed partial class GamePage : ListPage
         {
             items.Add(new ListItem(new NoOpCommand())
             {
-                Title = "No known save or config paths",
-                Subtitle = $"{_game.Name} has no usable entry in the Ludusavi manifest.",
+                Title = T("No known save or config paths"),
+                Subtitle = F("{0} has no usable entry in the Ludusavi manifest.", _game.Name),
                 Icon = Icons.Missing,
             });
         }
@@ -62,7 +63,7 @@ internal sealed partial class GamePage : ListPage
         // watch nothing happen.
         var subtitle = fallback is null
             ? entry.Path
-            : $"{entry.Path}  -  not created yet, opens {fallback}";
+            : F("{0}  -  not created yet, opens {1}", entry.Path, fallback);
 
         return new ListItem(new OpenFolderCommand(_app, _game, entry.Path))
         {
@@ -71,7 +72,7 @@ internal sealed partial class GamePage : ListPage
             Icon = Icons.ForFolder(entry),
             MoreCommands =
             [
-                new CommandContextItem(new CopyTextCommand(entry.Path) { Name = "Copy Path" }),
+                new CommandContextItem(new CopyTextCommand(entry.Path) { Name = T("Copy Path") }),
             ],
         };
     }

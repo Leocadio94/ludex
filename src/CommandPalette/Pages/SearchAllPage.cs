@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using static Ludex.Core.Texts;
 
 namespace Ludex;
 
@@ -16,9 +17,9 @@ internal sealed partial class SearchAllPage : DynamicListPage
     {
         _app = app;
         Icon = Icons.Search;
-        Title = "Search all games";
-        Name = "Search";
-        PlaceholderText = "Type a game name (two characters or more)...";
+        Title = T("Search all games");
+        Name = T("Search");
+        PlaceholderText = T("Type a game name (two characters or more)...");
         ShowDetails = true;
 
         app.Catalog.Changed += () => RaiseItemsChanged();
@@ -39,7 +40,7 @@ internal sealed partial class SearchAllPage : DynamicListPage
         {
             return [new ListItem(new NoOpCommand())
             {
-                Title = catalog.Error is null ? "Loading game database..." : "Failed to load game data",
+                Title = T(catalog.Error is null ? "Loading game database..." : "Failed to load game data"),
                 Subtitle = catalog.Error ?? catalog.Status,
                 Icon = Icons.App,
             }];
@@ -49,8 +50,8 @@ internal sealed partial class SearchAllPage : DynamicListPage
         {
             return [new ListItem(new NoOpCommand())
             {
-                Title = "Search all games",
-                Subtitle = "Type at least two characters.",
+                Title = T("Search all games"),
+                Subtitle = T("Type at least two characters."),
                 Icon = Icons.Search,
             }];
         }
@@ -75,7 +76,7 @@ internal sealed partial class SearchAllPage : DynamicListPage
                 return (IListItem)new ListItem(new GamePage(_app, game))
                 {
                     Title = s.Name,
-                    Subtitle = $"Database entry  ·  {game.SavePaths.Count} save, {game.ConfigPaths.Count} config paths",
+                    Subtitle = F("Database entry  ·  {0} save, {1} config paths", game.SavePaths.Count, game.ConfigPaths.Count),
                     Icon = Icons.Search,
                     Details = GameDisplay.Details(game),
                 };

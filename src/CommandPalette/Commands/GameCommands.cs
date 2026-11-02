@@ -4,6 +4,7 @@ using System.IO;
 using Ludex.Core;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using static Ludex.Core.Texts;
 
 namespace Ludex;
 
@@ -18,7 +19,7 @@ internal sealed partial class LaunchGameCommand : InvokableCommand
         _app = app;
         _game = game;
         _target = target;
-        Name = "Launch Game";
+        Name = T("Launch Game");
         Icon = Icons.Play;
     }
 
@@ -31,7 +32,7 @@ internal sealed partial class LaunchGameCommand : InvokableCommand
         catch (Exception e)
         {
             ExtensionHost.LogMessage($"[Ludex] Failed to launch {_game.Name}: {e}");
-            return CommandResult.ShowToast($"Could not launch {_game.Name}: {e.Message}");
+            return CommandResult.ShowToast(F("Could not launch {0}: {1}", _game.Name, e.Message));
         }
 
         _app.Usage.Record(_game.Slug);
@@ -50,7 +51,7 @@ internal sealed partial class OpenFolderCommand : InvokableCommand
         _app = app;
         _game = game;
         _path = path;
-        Name = "Open Folder";
+        Name = T("Open Folder");
         Icon = Icons.Folder;
     }
 
@@ -69,11 +70,11 @@ internal sealed partial class OpenFolderCommand : InvokableCommand
         // been launched. Opening the closest existing parent is more useful than an error.
         var ancestor = FolderEntries.NearestExistingAncestor(target);
         if (ancestor is null)
-            return CommandResult.ShowToast($"Folder does not exist: {target}");
+            return CommandResult.ShowToast(F("Folder does not exist: {0}", target));
 
         Open(ancestor);
         _app.Usage.Record(_game.Slug);
-        return CommandResult.ShowToast($"Folder not created yet. Opened {ancestor} instead.");
+        return CommandResult.ShowToast(F("Folder not created yet. Opened {0} instead.", ancestor));
     }
 
     private static void Open(string directory) =>

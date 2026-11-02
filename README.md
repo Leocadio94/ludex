@@ -107,9 +107,10 @@ Pick a game to see **Launch Game** and one row per save, config and install fold
 
 ## Language
 
-English is the default. The Flow Launcher plugin also speaks Brazilian Portuguese and follows Flow's own
-language setting. Command Palette is English only for now, and Raycast supports only US English in extensions.
-There is a Portuguese version of this page: [README.pt-BR.md](README.pt-BR.md).
+English is the default. The Flow Launcher plugin and the Command Palette extension also speak Brazilian
+Portuguese: Flow follows its own language setting, Command Palette follows the Windows display language.
+Raycast supports only US English in extensions. There is a Portuguese version of this page:
+[README.pt-BR.md](README.pt-BR.md).
 
 ## How it works
 

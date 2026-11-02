@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using static Ludex.Core.Texts;
 using CoreSettings = Ludex.Core.Settings;
 using GameSort = Ludex.Core.GameSort;
 
@@ -20,40 +21,40 @@ internal sealed partial class SettingsManager : JsonSettingsManager
 
     private readonly ChoiceSetSetting _defaultSort = new(
         Namespaced("DefaultSort"),
-        "Default order",
-        "Most used first floats the games you open often to the top. Alphabetical is a fixed A-Z list.",
+        T("Default order"),
+        T("Most used first floats the games you open often to the top. Alphabetical is a fixed A-Z list."),
         [
-            new ChoiceSetSetting.Choice("Most used first", SortUsage),
-            new ChoiceSetSetting.Choice("Alphabetical (A-Z)", SortAlphabetical),
+            new ChoiceSetSetting.Choice(T("Most used first"), SortUsage),
+            new ChoiceSetSetting.Choice(T("Alphabetical (A-Z)"), SortAlphabetical),
         ]);
 
-    private readonly ToggleSetting _detectSteam = new(Namespaced("DetectSteam"), "Scan Steam", "Applies on the next refresh.", true);
-    private readonly ToggleSetting _detectGog = new(Namespaced("DetectGog"), "Scan GOG", "Applies on the next refresh.", true);
-    private readonly ToggleSetting _detectEpic = new(Namespaced("DetectEpic"), "Scan Epic Games", "Applies on the next refresh.", true);
-    private readonly ToggleSetting _detectXbox = new(Namespaced("DetectXbox"), "Scan Xbox / Game Pass", "Applies on the next refresh.", true);
+    private readonly ToggleSetting _detectSteam = new(Namespaced("DetectSteam"), T("Scan Steam"), T("Applies on the next refresh."), true);
+    private readonly ToggleSetting _detectGog = new(Namespaced("DetectGog"), T("Scan GOG"), T("Applies on the next refresh."), true);
+    private readonly ToggleSetting _detectEpic = new(Namespaced("DetectEpic"), T("Scan Epic Games"), T("Applies on the next refresh."), true);
+    private readonly ToggleSetting _detectXbox = new(Namespaced("DetectXbox"), T("Scan Xbox / Game Pass"), T("Applies on the next refresh."), true);
 
     private readonly ToggleSetting _showUnmatched = new(
         Namespaced("ShowUnmatchedGames"),
-        "Show games with no manifest entry",
-        "List installed games the database does not know about, with just their install folder.",
+        T("Show games with no manifest entry"),
+        T("List installed games the database does not know about, with just their install folder."),
         true);
 
     private readonly TextSetting _manifestTtlDays = new(
         Namespaced("ManifestTtlDays"),
-        "Game database refresh interval (days)",
-        "How often the Ludusavi manifest is re-downloaded automatically.",
+        T("Game database refresh interval (days)"),
+        T("How often the Ludusavi manifest is re-downloaded automatically."),
         "7");
 
     private readonly TextSetting _installedTtlMinutes = new(
         Namespaced("InstalledGamesTtlMinutes"),
-        "Installed games cache lifetime (minutes)",
-        "How long the detected-games list is reused before re-scanning the stores.",
+        T("Installed games cache lifetime (minutes)"),
+        T("How long the detected-games list is reused before re-scanning the stores."),
         "60");
 
     private readonly TextSetting _maxResults = new(
         Namespaced("MaxResults"),
-        "Maximum search results",
-        "Cap on how many games \"Search all games\" shows at once.",
+        T("Maximum search results"),
+        T("Cap on how many games \"Search all games\" shows at once."),
         "50");
 
     internal static string SettingsJsonPath()

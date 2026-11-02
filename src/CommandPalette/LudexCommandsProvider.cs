@@ -4,6 +4,7 @@
 
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using static Ludex.Core.Texts;
 
 namespace Ludex;
 
@@ -26,7 +27,7 @@ public partial class LudexCommandsProvider : CommandProvider
             new CommandItem(new GamesPage(_app))
             {
                 Title = DisplayName,
-                Subtitle = "Launch installed games and open their save, config and install folders",
+                Subtitle = T("Launch installed games and open their save, config and install folders"),
                 MoreCommands = [
                     new CommandContextItem(searchAll),
                     new CommandContextItem(refreshGames),
@@ -36,18 +37,18 @@ public partial class LudexCommandsProvider : CommandProvider
             },
             new CommandItem(searchAll)
             {
-                Title = "Ludex: Search all games",
-                Subtitle = "Search the whole Ludusavi database, installed or not",
+                Title = T("Ludex: Search all games"),
+                Subtitle = T("Search the whole Ludusavi database, installed or not"),
             },
             new CommandItem(refreshGames)
             {
-                Title = "Ludex: Refresh installed games",
-                Subtitle = "Re-scan Steam, GOG, Epic and Xbox",
+                Title = T("Ludex: Refresh installed games"),
+                Subtitle = T("Re-scan Steam, GOG, Epic and Xbox"),
             },
             new CommandItem(refreshDatabase)
             {
-                Title = "Ludex: Refresh game database",
-                Subtitle = "Re-download the Ludusavi manifest (~16 MB)",
+                Title = T("Ludex: Refresh game database"),
+                Subtitle = T("Re-download the Ludusavi manifest (~16 MB)"),
             },
         ];
     }

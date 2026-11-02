@@ -6,6 +6,7 @@ using System.Text;
 using Ludex.Core;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using static Ludex.Core.Texts;
 
 namespace Ludex;
 
@@ -23,19 +24,20 @@ internal static class GameDisplay
         _ => store.ToString(),
     };
 
-    private static string Count(int count, string noun) =>
-        count.ToString(CultureInfo.InvariantCulture) + " " + noun + (count > 1 ? "s" : "");
+    private static string SaveCount(int count) => F(count > 1 ? "{0} saves" : "{0} save", count);
+
+    private static string ConfigCount(int count) => F(count > 1 ? "{0} configs" : "{0} config", count);
 
     public static string Subtitle(GameWithPaths game)
     {
         var counts = new List<string>();
-        if (game.SavePaths.Count > 0) counts.Add(Count(game.SavePaths.Count, "save"));
-        if (game.ConfigPaths.Count > 0) counts.Add(Count(game.ConfigPaths.Count, "config"));
-        if (counts.Count == 0) counts.Add("no known save paths");
+        if (game.SavePaths.Count > 0) counts.Add(SaveCount(game.SavePaths.Count));
+        if (game.ConfigPaths.Count > 0) counts.Add(ConfigCount(game.ConfigPaths.Count));
+        if (counts.Count == 0) counts.Add(T("no known save paths"));
 
         var subtitle = string.Join(", ", counts);
         if (!game.Name.Equals(game.DetectedName, StringComparison.OrdinalIgnoreCase))
-            subtitle += $"  ·  installed as \"{game.DetectedName}\"";
+            subtitle += "  ·  " + F("installed as \"{0}\"", game.DetectedName);
 
         return subtitle;
     }
@@ -45,23 +47,23 @@ internal static class GameDisplay
         var body = new StringBuilder();
 
         if (!string.IsNullOrEmpty(game.InstallPath))
-            body.AppendLine("**Install folder**\n\n`" + game.InstallPath + "`\n");
+            body.AppendLine("**" + T("Install folder") + "**\n\n`" + game.InstallPath + "`\n");
 
-        AppendPaths(body, "Saves", game.SavePaths);
-        AppendPaths(body, "Config", game.ConfigPaths);
+        AppendPaths(body, T("Saves"), game.SavePaths);
+        AppendPaths(body, T("Config"), game.ConfigPaths);
 
-        if (body.Length == 0) body.Append("No known save or config paths.");
+        if (body.Length == 0) body.Append(T("No known save or config paths."));
 
         var tags = new List<ITag> { new Tag(StoreLabel(game.Store)) };
-        if (game.SavePaths.Count > 0) tags.Add(new Tag(Count(game.SavePaths.Count, "save")));
-        if (game.ConfigPaths.Count > 0) tags.Add(new Tag(Count(game.ConfigPaths.Count, "config")));
+        if (game.SavePaths.Count > 0) tags.Add(new Tag(SaveCount(game.SavePaths.Count)));
+        if (game.ConfigPaths.Count > 0) tags.Add(new Tag(ConfigCount(game.ConfigPaths.Count)));
 
         return new Details
         {
             Title = game.Name,
             HeroImage = Icons.ForGame(game.IconPath, game.Matched),
             Body = body.ToString(),
-            Metadata = [new DetailsElement { Key = "Details", Data = new DetailsTags { Tags = tags.ToArray() } }],
+            Metadata = [new DetailsElement { Key = T("Details"), Data = new DetailsTags { Tags = tags.ToArray() } }],
         };
     }
 
@@ -87,10 +89,10 @@ internal static class GameDisplay
         body.AppendLine("**" + heading + "**\n");
 
         foreach (var path in paths.Take(MaxPathsInDetails))
-            body.AppendLine("- `" + path.Path + "`" + (path.Exists ? "" : "  (not created yet)"));
+            body.AppendLine("- `" + path.Path + "`" + (path.Exists ? "" : "  " + T("(not created yet)")));
 
         if (paths.Count > MaxPathsInDetails)
-            body.AppendLine("- ... and " + (paths.Count - MaxPathsInDetails).ToString(CultureInfo.InvariantCulture) + " more");
+            body.AppendLine("- " + F("... and {0} more", paths.Count - MaxPathsInDetails));
 
         body.AppendLine();
     }
