@@ -45,6 +45,8 @@ How it fits together: [docs/architecture.md](docs/architecture.md), [docs/decisi
   `Directory.Packages.props` stay inside `src/CommandPalette` so x64/ARM64 and central package versions don't leak.
 - **Command Palette feedback**: `ExtensionHost` status messages and toasts are invisible from the home page; use
   `RefreshPage` for progress and `CommandResult.ShowToast` for one-off messages.
+- **Changelogs**: every user-visible change updates `CHANGELOG.md` and the affected launcher's own
+  (`src/FlowLauncher`, `src/CommandPalette`, `raycast`) under Unreleased. Raycast keeps its Store format.
 - **Flow plugin ID** (`6F3B2A9C-…` in `plugin.json`) must not change.
 - The Raycast version deliberately differs from the C# pipeline; see the table in `docs/architecture.md` before
   "fixing" either side.

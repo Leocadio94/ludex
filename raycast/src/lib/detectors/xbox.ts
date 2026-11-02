@@ -1,4 +1,4 @@
-import { execSync } from "child_process";
+import { runPowerShellScript } from "@raycast/utils";
 import type { InstalledGame } from "../types";
 
 interface XboxGame {
@@ -7,21 +7,9 @@ interface XboxGame {
   launchTarget?: string;
 }
 
-function runPowerShell(script: string): string {
-  const encoded = Buffer.from(script, "utf16le").toString("base64");
-  return execSync(
-    `powershell -NoProfile -NonInteractive -EncodedCommand ${encoded}`,
-    {
-      encoding: "utf-8",
-      timeout: 25000,
-      stdio: ["ignore", "pipe", "ignore"],
-    },
-  );
-}
-
 // Reads display name from AppxManifest.xml.
 // Many entries use "ms-resource:" references which we can't resolve easily, so we skip those.
-function getXboxGamesWindows(): XboxGame[] {
+async function getXboxGamesWindows(): Promise<XboxGame[]> {
   const script = `
 $results = @()
 $packages = Get-AppxPackage -PackageTypeFilter Main -ErrorAction SilentlyContinue |
@@ -45,7 +33,9 @@ $results | ConvertTo-Json -Compress -Depth 1
 `;
 
   try {
-    const output = runPowerShell(script).trim();
+    const output = (
+      await runPowerShellScript(script, { timeout: 25000 })
+    ).trim();
     if (!output || output === "[]") return [];
     const parsed: unknown = JSON.parse(output);
     const items = Array.isArray(parsed) ? parsed : [parsed];
@@ -68,7 +58,7 @@ $results | ConvertTo-Json -Compress -Depth 1
 export async function detectXboxGames(): Promise<InstalledGame[]> {
   if (process.platform !== "win32") return [];
 
-  return getXboxGamesWindows().map((g) => ({
+  return (await getXboxGamesWindows()).map((g) => ({
     name: g.name,
     store: "xbox" as const,
     installPath: g.installPath,

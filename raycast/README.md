@@ -1,32 +1,38 @@
 # Ludex for Raycast
 
-The Raycast version of [Ludex](../README.md): browse your installed games and quickly open their save or config folders. Unlike the Flow Launcher and Command Palette versions, this one is TypeScript and shares no code with the C# core. Powered by the [Ludusavi Manifest](https://github.com/mtkennerly/ludusavi-manifest) — a community-maintained database of save locations for ~19,000 games.
+Windows only.
+
+The Raycast version of [Ludex](https://github.com/Leocadio94/ludex): browse your installed games and quickly open their save or config folders. Unlike the Flow Launcher and Command Palette versions, this one is TypeScript and shares no code with the C# core. Powered by the [Ludusavi Manifest](https://github.com/mtkennerly/ludusavi-manifest) — a community-maintained database of save locations for ~19,000 games.
 
 ## Features
 
 ### Browse Games
-Lists all games currently detected on your machine, grouped by store. For each game, it shows how many save and config paths are known, whether those paths exist on disk, and lets you open them directly in Finder (macOS) or Explorer (Windows).
 
-- Cmd+R — Refresh installed games
-- Cmd+Shift+R — Refresh full game database
+Lists all games currently detected on your machine, grouped by store. For each game, it shows how many save and config paths are known, whether those paths exist on disk, and lets you open them directly in Explorer, or launch the game.
+
+- Ctrl+R — Refresh installed games
+- Ctrl+Shift+R — Refresh full game database
 
 ### Search Games
+
 Searches the entire Ludusavi database by name, useful for looking up whether a game is supported before installing, or for finding its save location manually.
 
 ### Refresh Installed Games
+
 Re-scans all stores to detect newly installed or removed games and updates the local cache. The installed games list is cached for 1 hour; use this command to bust that cache immediately.
 
 ### Refresh Game Database
+
 Re-downloads and re-indexes the full Ludusavi Manifest from GitHub. Use this if game save paths seem outdated. The database is cached locally for 7 days.
 
 ## Supported Stores
 
-| Store | Detection method |
-|-------|-----------------|
-| Steam | Registry (Windows) / default path (macOS) + `libraryfolders.vdf` |
-| GOG | Registry (Windows) / GOG Galaxy config (macOS) |
-| Epic Games | Launcher manifests (`%ProgramData%\Epic\...`) |
-| Xbox / Game Pass | `%LOCALAPPDATA%\Packages\...` |
+| Store            | Detection method                              |
+| ---------------- | --------------------------------------------- |
+| Steam            | Registry + `libraryfolders.vdf`               |
+| GOG              | Registry                                      |
+| Epic Games       | Launcher manifests (`%ProgramData%\Epic\...`) |
+| Xbox / Game Pass | `%LOCALAPPDATA%\Packages\...`                 |
 
 ## How it works
 
@@ -40,17 +46,15 @@ Re-downloads and re-indexes the full Ludusavi Manifest from GitHub. Use this if 
 
 The Ludusavi Manifest uses named placeholders for common OS directories. This extension resolves them to real paths at runtime:
 
-| Variable | Windows | macOS |
-|----------|---------|-------|
-| `<home>` | `C:\Users\<user>` | `/Users/<user>` |
-| `<winAppData>` | `%APPDATA%` | — |
-| `<winLocalAppData>` | `%LOCALAPPDATA%` | — |
-| `<winLocalAppDataLow>` | `AppData\LocalLow` | — |
-| `<winDocuments>` | `Documents` | — |
-| `<winProgramData>` | `%PROGRAMDATA%` | — |
-| `<xdgData>` | — | `~/.local/share` |
-| `<xdgConfig>` | — | `~/.config` |
-| `<base>` | Game install directory | Game install directory |
+| Variable               | Resolves to            |
+| ---------------------- | ---------------------- |
+| `<home>`               | `C:\Users\<user>`      |
+| `<winAppData>`         | `%APPDATA%`            |
+| `<winLocalAppData>`    | `%LOCALAPPDATA%`       |
+| `<winLocalAppDataLow>` | `AppData\LocalLow`     |
+| `<winDocuments>`       | `Documents`            |
+| `<winProgramData>`     | `%PROGRAMDATA%`        |
+| `<base>`               | Game install directory |
 
 ## Development
 

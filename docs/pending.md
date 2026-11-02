@@ -5,14 +5,7 @@ Open items that are not part of the current phase. Move each to an issue once so
 - **README install section**: when a store publishes Ludex, rewrite "Install" in `README.md` and `README.pt-BR.md`
   with that store's steps and keep "Build from source" for contributors.
 - **Raycast Store**: `author` is set and `ray lint` passes. Before `npm run publish`:
-  - add `raycast/CHANGELOG.md` (`## [Initial Version] - {PR_MERGE_DATE}`);
   - add 3 to 6 screenshots (2000x1250 PNG, via Capture Window in dev mode, "Save to Metadata");
-  - drop `navigationTitle` from the root commands (Browse Games, Search Games): the Store guidelines forbid
-    changing it on a root command;
-  - delete `src/download-manifest-test.tsx`, a leftover that is not in the manifest;
-  - decide `platforms`: it lists macOS but nothing was tested there (the guidelines say to restrict it);
-  - replace `execSync` + PowerShell in the GOG and Xbox detectors with `runPowerShellScript` from `@raycast/utils`;
-  - the README links to `../README.md`, which breaks in the Store; use an absolute URL;
   - the category is Developer Tools; Fun or Productivity may fit better.
 - **Command Palette publishing**: replace the template `Identity/@Publisher` in `Package.appxmanifest`, publish
   through WinGet (Inno Setup, see `docs/reference/cmdpal-template`) or the Microsoft Store, then add the extension to

@@ -66,23 +66,24 @@ export default function Command() {
       filtering={false}
       onSearchTextChange={setQuery}
       searchBarPlaceholder="Search all games..."
-      navigationTitle={
-        isLoading
-          ? statusMsg
-          : `${names.length.toLocaleString()} games in database`
-      }
     >
-      {!isLoading && visible.length === 0 && (
-        <List.EmptyView
-          title={
-            query.trim() ? "No games found" : "Type to search the game database"
-          }
-          description={
-            query.trim()
-              ? undefined
-              : `${names.length.toLocaleString()} games indexed`
-          }
-        />
+      {isLoading ? (
+        <List.EmptyView title={statusMsg} />
+      ) : (
+        visible.length === 0 && (
+          <List.EmptyView
+            title={
+              query.trim()
+                ? "No games found"
+                : "Type to search the game database"
+            }
+            description={
+              query.trim()
+                ? undefined
+                : `${names.length.toLocaleString()} games indexed`
+            }
+          />
+        )
       )}
       {manifest &&
         visible.map((name) => (

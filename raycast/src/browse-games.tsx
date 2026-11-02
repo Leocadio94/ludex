@@ -97,15 +97,8 @@ export default function Command() {
   })).filter((s) => s.games.length > 0);
 
   return (
-    <List
-      isLoading={isLoading}
-      searchBarPlaceholder="Search games..."
-      navigationTitle={
-        isLoading
-          ? statusMsg
-          : `${games.length} game${games.length !== 1 ? "s" : ""} found`
-      }
-    >
+    <List isLoading={isLoading} searchBarPlaceholder="Search games...">
+      {isLoading && games.length === 0 && <List.EmptyView title={statusMsg} />}
       {byStore.map(({ store, games: storeGames }) => (
         <List.Section key={store} title={STORE_LABEL[store]}>
           {storeGames.map((game) => (

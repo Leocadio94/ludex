@@ -53,8 +53,7 @@
   },
   "author": "Zeocadio",
   "platforms": [
-    "Windows",
-    "macOS"
+    "Windows"
   ],
   "categories": [
     "Developer Tools"

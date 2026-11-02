@@ -1,4 +1,4 @@
-import { execSync } from "child_process";
+import { runPowerShellScript } from "@raycast/utils";
 import * as fs from "fs";
 import * as path from "path";
 import type { InstalledGame } from "../types";
@@ -36,19 +36,7 @@ interface GogGame {
   installPath: string;
 }
 
-function runPowerShell(script: string): string {
-  const encoded = Buffer.from(script, "utf16le").toString("base64");
-  return execSync(
-    `powershell -NoProfile -NonInteractive -EncodedCommand ${encoded}`,
-    {
-      encoding: "utf-8",
-      timeout: 10000,
-      stdio: ["ignore", "pipe", "ignore"],
-    },
-  );
-}
-
-function getGogGamesWindows(): GogGame[] {
+async function getGogGamesWindows(): Promise<GogGame[]> {
   const script = `
 $results = @()
 $keys = @('HKLM:\\SOFTWARE\\WOW6432Node\\GOG.com\\Games', 'HKLM:\\SOFTWARE\\GOG.com\\Games')
@@ -67,7 +55,9 @@ $results | ConvertTo-Json -Compress -Depth 1
 `;
 
   try {
-    const output = runPowerShell(script).trim();
+    const output = (
+      await runPowerShellScript(script, { timeout: 10000 })
+    ).trim();
     if (!output || output === "[]") return [];
     const parsed: unknown = JSON.parse(output);
     const items = Array.isArray(parsed) ? parsed : [parsed];
@@ -93,7 +83,7 @@ export async function detectGogGames(): Promise<InstalledGame[]> {
     return [];
   }
 
-  return getGogGamesWindows().map((g) => ({
+  return (await getGogGamesWindows()).map((g) => ({
     name: g.name,
     store: "gog" as const,
     storeGameId: g.id || undefined,
