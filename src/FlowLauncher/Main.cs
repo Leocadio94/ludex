@@ -10,10 +10,12 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
 {
     private const string DrillPrefix = ">";
     private const int ProgressBoxDelayMs = 1500;
+    private const int NoticeSeconds = 15;
 
     private PluginInitContext _context = null!;
     private Settings _settings = null!;
     private GameCatalog _catalog = null!;
+    private (string Text, bool Failed, DateTime At)? _notice;
 
     #region Lifecycle
 
@@ -129,6 +131,23 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
         var ordered = alphabetical
             ? games.OrderBy(g => g.Name, StringComparer.OrdinalIgnoreCase)
             : games.AsEnumerable();
+
+        if (_notice is { } notice && (DateTime.UtcNow - notice.At).TotalSeconds < NoticeSeconds)
+        {
+            results.Add(new Result
+            {
+                Title = notice.Text,
+                IcoPath = notice.Failed ? Icons.Missing : Icons.App,
+                Score = 10000,
+                AddSelectedCount = false,
+                Action = _ =>
+                {
+                    _notice = null;
+                    _context.API.ReQuery();
+                    return false;
+                }
+            });
+        }
 
         var rank = games.Count;
         foreach (var game in ordered.Take(_settings.MaxResults))
@@ -258,7 +277,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
                 Score = 3,
                 Action = ctx =>
                 {
-                    _ = RunRefreshAsync(false, true, T("Re-detecting installed games..."));
+                    _ = RunRefreshAsync(false, true, T("Re-detecting installed games..."), keyword);
                     return false;
                 }
             }),
@@ -270,7 +289,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
                 Score = 2,
                 Action = ctx =>
                 {
-                    _ = RunRefreshAsync(true, true, T("Downloading the game database..."));
+                    _ = RunRefreshAsync(true, true, T("Downloading the game database..."), keyword);
                     return false;
                 }
             }),
@@ -294,7 +313,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
     /// result action so the dialog is created on the UI thread; the returned task is intentionally
     /// not awaited.
     /// </summary>
-    private async Task RunRefreshAsync(bool manifest, bool games, string caption)
+    private async Task RunRefreshAsync(bool manifest, bool games, string caption, string keyword)
     {
         _catalog.Begin(caption);
 
@@ -332,10 +351,13 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
 
         if (cts.IsCancellationRequested) return;
 
-        _context.API.ShowMsg(
-            "Ludex",
-            _catalog.Error is null ? F("Ready — {0} games", _catalog.Games.Count) : F("Failed: {0}", _catalog.Error),
-            Icons.App);
+        var failed = _catalog.Error is not null;
+        var message = failed ? F("Failed: {0}", _catalog.Error ?? "") : F("Ready — {0} games", _catalog.Games.Count);
+
+        // Windows may suppress the toast, so the result is also shown as the first row of the game list.
+        _notice = (message, failed, DateTime.UtcNow);
+        _context.API.ShowMsg("Ludex", message, Icons.App);
+        _context.API.ChangeQuery($"{keyword} ");
     }
 
     /// <summary>
