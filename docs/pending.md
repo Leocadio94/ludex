@@ -5,8 +5,7 @@ Open items that are not part of the current phase. Move each to an issue once so
 - **README install section**: when a store publishes Ludex, rewrite "Install" in `README.md` and `README.pt-BR.md`
   with that store's steps and keep "Build from source" for contributors.
 - **Raycast Store**: `author` is set and `ray lint` passes. Before `npm run publish`:
-  - add 3 to 6 screenshots (2000x1250 PNG, via Capture Window in dev mode, "Save to Metadata");
-  - the category is Developer Tools; Fun or Productivity may fit better.
+  - add 3 to 6 screenshots (2000x1250 PNG, via Capture Window in dev mode, "Save to Metadata");
 - **Command Palette publishing**: replace the template `Identity/@Publisher` in `Package.appxmanifest`, publish
   through WinGet (Inno Setup, see `docs/reference/cmdpal-template`) or the Microsoft Store, then add the extension to
   the community gallery with a pull request to `microsoft/CmdPal-Extensions` (an `extension.json` and an icon pointing
