@@ -17,6 +17,8 @@
 
 **[Features](#features) · [Versions](#versions) · [Install](#install) · [How it works](#how-it-works) · [Credits](#credits)**
 
+**English** · [Português (Brasil)](README.pt-BR.md)
+
 </div>
 
 ---
@@ -102,6 +104,12 @@ npm run dev
 | Re-download the database | `lx !refresh` | **Ludex: Refresh game database** | **Refresh Game Database** |
 
 Pick a game to see **Launch Game** and one row per save, config and install folder.
+
+## Language
+
+English is the default. The Flow Launcher plugin also speaks Brazilian Portuguese and follows Flow's own
+language setting. Command Palette is English only for now, and Raycast supports only US English in extensions.
+There is a Portuguese version of this page: [README.pt-BR.md](README.pt-BR.md).
 
 ## How it works
 

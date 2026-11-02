@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using Ludex.Core;
+using static Ludex.Core.Texts;
 
 namespace Flow.Launcher.Plugin.Ludex;
 
@@ -20,37 +21,37 @@ public sealed class SettingsPanel : UserControl
 
         var stack = new StackPanel { Margin = new Thickness(10) };
 
-        stack.Children.Add(Header("Stores to scan"));
+        stack.Children.Add(Header(T("Stores to scan")));
         stack.Children.Add(Toggle("Steam", _settings.DetectSteam, v => _settings.DetectSteam = v));
         stack.Children.Add(Toggle("GOG", _settings.DetectGog, v => _settings.DetectGog = v));
         stack.Children.Add(Toggle("Epic Games", _settings.DetectEpic, v => _settings.DetectEpic = v));
         stack.Children.Add(Toggle("Xbox / Game Pass", _settings.DetectXbox, v => _settings.DetectXbox = v));
 
-        stack.Children.Add(Header("Display"));
+        stack.Children.Add(Header(T("Display")));
         stack.Children.Add(Choice(
-            "Default order for \"lx\"",
+            T("Default order for \"lx\""),
             new[]
             {
-                ("Most used first", GameSort.Usage),
-                ("Alphabetical (A-Z)", GameSort.Alphabetical)
+                (T("Most used first"), GameSort.Usage),
+                (T("Alphabetical (A-Z)"), GameSort.Alphabetical)
             },
             _settings.DefaultSort,
             v => _settings.DefaultSort = v));
         stack.Children.Add(Toggle(
-            "Show games with no manifest entry (install folder only)",
+            T("Show games with no manifest entry (install folder only)"),
             _settings.ShowUnmatchedGames,
             v => _settings.ShowUnmatchedGames = v));
-        stack.Children.Add(Number("Maximum results", _settings.MaxResults, 5, 500, v => _settings.MaxResults = v));
+        stack.Children.Add(Number(T("Maximum results"), _settings.MaxResults, 5, 500, v => _settings.MaxResults = v));
 
-        stack.Children.Add(Header("Caching"));
-        stack.Children.Add(Number("Game database refresh interval (days)", _settings.ManifestTtlDays, 1, 90,
+        stack.Children.Add(Header(T("Caching")));
+        stack.Children.Add(Number(T("Game database refresh interval (days)"), _settings.ManifestTtlDays, 1, 90,
             v => _settings.ManifestTtlDays = v));
-        stack.Children.Add(Number("Installed games cache lifetime (minutes)", _settings.InstalledGamesTtlMinutes, 1, 1440,
+        stack.Children.Add(Number(T("Installed games cache lifetime (minutes)"), _settings.InstalledGamesTtlMinutes, 1, 1440,
             v => _settings.InstalledGamesTtlMinutes = v));
 
         stack.Children.Add(new TextBlock
         {
-            Text = "Use \"lx !refresh\" and \"lx !games\" to refresh immediately.",
+            Text = T("Use \"lx !refresh\" and \"lx !games\" to refresh immediately."),
             Opacity = 0.7,
             Margin = new Thickness(0, 12, 0, 0),
             TextWrapping = TextWrapping.Wrap

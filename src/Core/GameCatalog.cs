@@ -18,7 +18,7 @@ public sealed class GameCatalog
     private Task? _loading;
 
     private volatile bool _ready;
-    private volatile string _status = "Starting...";
+    private volatile string _status = Texts.T("Starting...");
     private volatile string? _error;
 
     private Dictionary<string, IndexedGame> _index = new();
@@ -81,23 +81,23 @@ public sealed class GameCatalog
             _index = await _manifest.LoadAsync(forceManifest, s => _status = s, onProgress, token)
                 .ConfigureAwait(false);
 
-            _status = "Detecting installed games...";
+            _status = Texts.T("Detecting installed games...");
             onProgress?.Invoke(85);
             var installed = await _detector.DetectAsync(forceGames, token).ConfigureAwait(false);
 
-            _status = "Matching against the database...";
+            _status = Texts.T("Matching against the database...");
             onProgress?.Invoke(95);
             var games = Matcher.Match(installed, _index, _settings.ShowUnmatchedGames);
 
             _games = games;
             _bySlug = games.ToDictionary(g => g.Slug, StringComparer.Ordinal);
             _ready = true;
-            _status = $"{games.Count} games";
+            _status = Texts.F("{0} games", games.Count);
             onProgress?.Invoke(100);
         }
         catch (OperationCanceledException)
         {
-            _status = "Cancelled";
+            _status = Texts.T("Cancelled");
         }
         catch (Exception e)
         {

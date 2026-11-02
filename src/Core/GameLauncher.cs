@@ -34,9 +34,9 @@ public static class GameLauncher
     /// <summary>Short description of how the game will start, for the result subtitle.</summary>
     public static string Describe(GameStore store, string target) => store switch
     {
-        GameStore.Steam => "Launch through Steam",
-        GameStore.Epic => "Launch through the Epic Games Launcher",
-        GameStore.Xbox => "Launch through the Xbox app",
+        GameStore.Steam => Texts.T("Launch through Steam"),
+        GameStore.Epic => Texts.T("Launch through the Epic Games Launcher"),
+        GameStore.Xbox => Texts.T("Launch through the Xbox app"),
         GameStore.Gog => target,
         _ => target
     };

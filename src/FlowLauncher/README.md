@@ -111,6 +111,11 @@ every other tool built on it) on the next refresh. Opening an issue here cannot 
 
 Built for [Flow Launcher](https://www.flowlauncher.com), which is itself open source.
 
+## Language
+
+English by default; Brazilian Portuguese when Flow's language is set to it (Settings > General > Language).
+How it works and how to add text: [docs/localization.md](../../docs/localization.md).
+
 ## Licence
 
 [MIT](../../LICENSE) — © 2026 Gabriel Leocádio.

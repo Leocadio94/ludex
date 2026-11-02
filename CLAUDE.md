@@ -26,6 +26,8 @@ How it fits together: [docs/architecture.md](docs/architecture.md), [docs/decisi
 
 - **Core stays launcher-free and trim-safe.** The Command Palette extension publishes trimmed: source-generated
   JSON only, and `JsonStringEnumConverter<T>` rather than the non-generic converter.
+- **User-visible C# text goes through `Texts.T` / `Texts.F`**, and the English literal is the key into
+  `Texts.PtBr.cs`: edit both together or the translation is orphaned. See [docs/localization.md](docs/localization.md).
 - **`installed-games-v3.json`**: bump the suffix whenever `InstalledGame` gains a field, or old caches serve nulls.
 - **`<root>` is the store root** (the folder containing `steamapps`), not the install directory's parent.
   `InstalledGame.StoreRoot` exists for this.

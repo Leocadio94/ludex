@@ -56,13 +56,13 @@ public sealed class ManifestStore
     {
         if (!force && IsFresh() && File.Exists(_indexFile))
         {
-            onStatus?.Invoke("Loading game database...");
+            onStatus?.Invoke(Texts.T("Loading game database..."));
             return await ReadIndexAsync(token).ConfigureAwait(false);
         }
 
         if (force || !File.Exists(_manifestFile) || !IsFresh())
         {
-            onStatus?.Invoke("Downloading game database...");
+            onStatus?.Invoke(Texts.T("Downloading game database..."));
 
             // Flow's HttpDownloadAsync refuses to write over an existing file, so download
             // beside it and swap. A failed download also leaves the old manifest intact.
@@ -76,7 +76,7 @@ public sealed class ManifestStore
         }
 
         onProgress?.Invoke(60);
-        onStatus?.Invoke("Indexing game database...");
+        onStatus?.Invoke(Texts.T("Indexing game database..."));
         var count = await Task.Run(() => BuildIndex(onStatus, onProgress, token), token).ConfigureAwait(false);
         onStatus?.Invoke($"Indexed {count:N0} games");
 
@@ -132,7 +132,7 @@ public sealed class ManifestStore
                 seen++;
                 if (seen % 2000 == 0)
                 {
-                    onStatus?.Invoke($"Indexing game database... ({seen:N0} games)");
+                    onStatus?.Invoke(Texts.F("Indexing game database... ({0:N0} games)", seen));
                     onProgress?.Invoke(60 + Math.Min(25, 25.0 * seen / ApproximateEntryCount));
                     writer.Flush();
                 }

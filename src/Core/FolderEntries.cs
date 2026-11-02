@@ -73,7 +73,7 @@ public static class FolderEntries
         {
             entries.Add(new FolderEntry
             {
-                Title = "Open Install Folder",
+                Title = Texts.T("Open Install Folder"),
                 Path = game.InstallPath,
                 Exists = Directory.Exists(game.InstallPath),
                 IsInstall = true
@@ -127,15 +127,15 @@ public static class FolderEntries
 
     private static string FolderTitle(PathTags tags, string? os, string? store)
     {
-        var name = tags.HasFlag(PathTags.Save) && tags.HasFlag(PathTags.Config)
-            ? "Save & Config Folder"
-            : tags.HasFlag(PathTags.Save) ? "Save Folder" : "Config Folder";
+        var name = Texts.T(tags.HasFlag(PathTags.Save) && tags.HasFlag(PathTags.Config)
+            ? "Open Save & Config Folder"
+            : tags.HasFlag(PathTags.Save) ? "Open Save Folder" : "Open Config Folder");
 
         var parts = new List<string>();
         if (os is not null) parts.Add(Capitalize(os));
         if (store is not null) parts.Add(Capitalize(store));
 
-        return parts.Count > 0 ? $"Open {name} ({string.Join(", ", parts)})" : $"Open {name}";
+        return parts.Count > 0 ? $"{name} ({string.Join(", ", parts)})" : name;
     }
 
     private static string Capitalize(string s) =>

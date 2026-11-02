@@ -1,10 +1,12 @@
+using System.Globalization;
 using System.IO;
 using System.Windows.Controls;
 using Ludex.Core;
+using static Ludex.Core.Texts;
 
 namespace Flow.Launcher.Plugin.Ludex;
 
-public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadable
+public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadable, IPluginI18n
 {
     private const string DrillPrefix = ">";
 
@@ -17,6 +19,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
     public Task InitAsync(PluginInitContext context)
     {
         _context = context;
+        Culture = CultureInfo.CurrentUICulture;
         _settings = context.API.LoadSettingJsonStorage<Settings>();
 
         var cacheDir = context.CurrentPluginMetadata.PluginCacheDirectoryPath;
@@ -39,6 +42,13 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
     }
 
     public Task ReloadDataAsync() => _catalog.StartLoad(false, true);
+
+    public string GetTranslatedPluginTitle() => _context.CurrentPluginMetadata.Name;
+
+    public string GetTranslatedPluginDescription() =>
+        T("Browse installed games and open their save, config or install folders");
+
+    public void OnCultureInfoChanged(CultureInfo newCulture) => Culture = newCulture;
 
     #endregion
 
@@ -71,15 +81,15 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
     {
         if (_catalog.Error is { } error)
         {
-            return Single("Failed to load game data", error, Icons.Missing, _ =>
+            return Single(T("Failed to load game data"), error, Icons.Missing, _ =>
             {
                 _catalog.StartLoad(true, true);
-                _context.API.ShowMsg("Ludex", "Retrying...");
+                _context.API.ShowMsg("Ludex", T("Retrying..."));
                 return false;
             });
         }
 
-        return Single("Loading game database...", _catalog.Status, Icons.App, _ =>
+        return Single(T("Loading game database..."), _catalog.Status, Icons.App, _ =>
         {
             _context.API.ReQuery();
             return false;
@@ -134,13 +144,15 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
         bool forceOrder)
     {
         var counts = new List<string>();
-        if (game.SavePaths.Count > 0) counts.Add($"{game.SavePaths.Count} save{(game.SavePaths.Count > 1 ? "s" : "")}");
-        if (game.ConfigPaths.Count > 0) counts.Add($"{game.ConfigPaths.Count} config{(game.ConfigPaths.Count > 1 ? "s" : "")}");
-        if (counts.Count == 0) counts.Add("no known save paths");
+        if (game.SavePaths.Count > 0)
+            counts.Add(F(game.SavePaths.Count > 1 ? "{0} saves" : "{0} save", game.SavePaths.Count));
+        if (game.ConfigPaths.Count > 0)
+            counts.Add(F(game.ConfigPaths.Count > 1 ? "{0} configs" : "{0} config", game.ConfigPaths.Count));
+        if (counts.Count == 0) counts.Add(T("no known save paths"));
 
         var subtitle = $"{StoreLabel(game.Store)}  ·  {string.Join(", ", counts)}";
         if (!game.Name.Equals(game.DetectedName, StringComparison.OrdinalIgnoreCase))
-            subtitle += $"  ·  installed as \"{game.DetectedName}\"";
+            subtitle += $"  ·  {F("installed as \"{0}\"", game.DetectedName)}";
 
         return new Result
         {
@@ -169,7 +181,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
         var filter = space < 0 ? "" : rest[(space + 1)..].Trim();
 
         if (!_catalog.TryGetGame(slug, out var game))
-            return Single("Game not found", "It may have been removed since the last refresh.", Icons.Missing, _ =>
+            return Single(T("Game not found"), T("It may have been removed since the last refresh."), Icons.Missing, _ =>
             {
                 _context.API.ChangeQuery($"{ActionKeyword(query)} ");
                 return false;
@@ -179,7 +191,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
         {
             new()
             {
-                Title = "Back to all games",
+                Title = T("Back to all games"),
                 SubTitle = game.Name,
                 IcoPath = Icons.Back,
                 Score = 1000,
@@ -216,49 +228,55 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
 
         var results = new List<Result>();
 
-        foreach (var hint in CommandHints(query))
+        // The typed command stays English ("!games"), so match it against the command name too,
+        // not only the translated title.
+        foreach (var (name, hint) in CommandHintsByName(query))
         {
-            if (command.Length == 0 || _context.API.FuzzySearch(command, hint.Title).Success)
+            if (command.Length == 0 ||
+                _context.API.FuzzySearch(command, name).Success ||
+                _context.API.FuzzySearch(command, hint.Title).Success)
                 results.Add(hint);
         }
 
         return results;
     }
 
-    private List<Result> CommandHints(Query query)
+    private IEnumerable<Result> CommandHints(Query query) => CommandHintsByName(query).Select(h => h.Hint);
+
+    private List<(string Name, Result Hint)> CommandHintsByName(Query query)
     {
         var keyword = ActionKeyword(query);
 
-        return new List<Result>
+        return new List<(string, Result)>
         {
-            new()
+            ("games", new Result
             {
-                Title = "Refresh Installed Games",
-                SubTitle = $"{keyword} !games  ·  re-scan Steam, GOG, Epic and Xbox",
+                Title = T("Refresh Installed Games"),
+                SubTitle = F("{0} !games  ·  re-scan Steam, GOG, Epic and Xbox", keyword),
                 IcoPath = Icons.Refresh,
                 Score = 3,
                 Action = ctx =>
                 {
-                    _ = RunRefreshAsync(false, true, "Re-detecting installed games...");
+                    _ = RunRefreshAsync(false, true, T("Re-detecting installed games..."));
                     return false;
                 }
-            },
-            new()
+            }),
+            ("refresh", new Result
             {
-                Title = "Refresh Game Database",
-                SubTitle = $"{keyword} !refresh  ·  re-download the Ludusavi manifest (~16 MB)",
+                Title = T("Refresh Game Database"),
+                SubTitle = F("{0} !refresh  ·  re-download the Ludusavi manifest (~16 MB)", keyword),
                 IcoPath = Icons.Download,
                 Score = 2,
                 Action = ctx =>
                 {
-                    _ = RunRefreshAsync(true, true, "Downloading the game database...");
+                    _ = RunRefreshAsync(true, true, T("Downloading the game database..."));
                     return false;
                 }
-            },
-            new()
+            }),
+            ("all", new Result
             {
-                Title = "Search All Games",
-                SubTitle = $"{keyword} !all <name>  ·  search the whole database, not just installed games",
+                Title = T("Search All Games"),
+                SubTitle = F("{0} !all <name>  ·  search the whole database, not just installed games", keyword),
                 IcoPath = Icons.Search,
                 Score = 1,
                 Action = _ =>
@@ -266,7 +284,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
                     _context.API.ChangeQuery($"{keyword} !all ");
                     return false;
                 }
-            }
+            })
         };
     }
 
@@ -300,7 +318,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
 
         _context.API.ShowMsg(
             "Ludex",
-            _catalog.Error is null ? $"Ready — {_catalog.Games.Count} games" : $"Failed: {_catalog.Error}",
+            _catalog.Error is null ? F("Ready — {0} games", _catalog.Games.Count) : F("Failed: {0}", _catalog.Error),
             Icons.App);
     }
 
@@ -311,7 +329,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
     private List<Result> SearchAllResults(Query query, string search)
     {
         if (search.Length < 2)
-            return Single("Search all games", "Type at least two characters.", Icons.Search, _ => false);
+            return Single(T("Search All Games"), T("Type at least two characters."), Icons.Search, _ => false);
 
         var scored = new List<(int Score, string Name, IList<int> Highlight)>();
 
@@ -333,7 +351,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
                 return new Result
                 {
                     Title = s.Name,
-                    SubTitle = $"Database entry  ·  {game.SavePaths.Count} save, {game.ConfigPaths.Count} config paths",
+                    SubTitle = F("Database entry  ·  {0} save, {1} config paths", game.SavePaths.Count, game.ConfigPaths.Count),
                     TitleHighlightData = s.Highlight,
                     IcoPath = Icons.Search,
                     Score = s.Score,
@@ -369,10 +387,10 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
         // watch nothing happen.
         var subtitle = fallback is null
             ? entry.Path
-            : $"{entry.Path}   —   not created yet, opens {fallback}";
+            : F("{0}   —   not created yet, opens {1}", entry.Path, fallback);
 
         var tooltip = entry.Sources.Count > 1
-            ? $"{entry.Path}\n\nFrom:\n{string.Join('\n', entry.Sources)}"
+            ? F("{0}\n\nFrom:\n{1}", entry.Path, string.Join('\n', entry.Sources))
             : entry.Path;
 
         return new Result
@@ -394,7 +412,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
 
         return new Result
         {
-            Title = "Launch Game",
+            Title = T("Launch Game"),
             SubTitle = GameLauncher.Describe(game.Store, target),
             IcoPath = GameIcon(game),
             Score = score,
@@ -408,7 +426,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
                 catch (Exception e)
                 {
                     _context.API.LogException(nameof(Main), $"Failed to launch {game.Name}", e);
-                    _context.API.ShowMsgError("Could not launch the game", e.Message);
+                    _context.API.ShowMsgError(T("Could not launch the game"), e.Message);
                     return false;
                 }
             }
@@ -417,8 +435,8 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
 
     private Result NoPathsResult(GameWithPaths game) => new()
     {
-        Title = "No known save or config paths",
-        SubTitle = $"{game.Name} has no usable entry in the Ludusavi manifest.",
+        Title = T("No known save or config paths"),
+        SubTitle = F("{0} has no usable entry in the Ludusavi manifest.", game.Name),
         IcoPath = Icons.Missing,
         Score = 500,
         Action = _ => false
@@ -440,12 +458,12 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
         var ancestor = FolderEntries.NearestExistingAncestor(target);
         if (ancestor is null)
         {
-            _context.API.ShowMsgError("Folder does not exist", target);
+            _context.API.ShowMsgError(T("Folder does not exist"), target);
             return false;
         }
 
         _context.API.OpenDirectory(ancestor);
-        _context.API.ShowMsg("Folder not created yet", $"Opened {ancestor} instead.", Icons.Missing);
+        _context.API.ShowMsg(T("Folder not created yet"), F("Opened {0} instead.", ancestor), Icons.Missing);
         return true;
     }
 
@@ -475,7 +493,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
                 {
                     new()
                     {
-                        Title = "Copy Path",
+                        Title = T("Copy Path"),
                         SubTitle = entry.Path,
                         IcoPath = Icons.Copy,
                         Score = 100,
@@ -487,7 +505,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadab
                     },
                     new()
                     {
-                        Title = "Open Folder",
+                        Title = T("Open Folder"),
                         SubTitle = entry.Path,
                         IcoPath = Icons.Folder,
                         Score = 90,
