@@ -1,4 +1,4 @@
-import { runPowerShellScript } from "@raycast/utils";
+import { runPowerShell } from "../powershell";
 import type { InstalledGame } from "../types";
 
 interface XboxGame {
@@ -47,9 +47,7 @@ $results | ConvertTo-Json -Compress -Depth 1
 `;
 
   try {
-    const output = (
-      await runPowerShellScript(script, { timeout: 25000 })
-    ).trim();
+    const output = (await runPowerShell(script, 25000)).trim();
     if (!output || output === "[]") return [];
     const parsed: unknown = JSON.parse(output);
     const items = Array.isArray(parsed) ? parsed : [parsed];
