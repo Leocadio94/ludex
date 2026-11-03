@@ -8,7 +8,7 @@ The Raycast version of [Ludex](https://github.com/Leocadio94/ludex). It lists yo
 
 ### Browse Games
 
-Lists the games detected on your machine, grouped by store. Each game shows how many save and config paths are known and whether they exist on disk. From there you can open a folder in Explorer or launch the game.
+Lists the games detected on your machine, grouped by store, each with the artwork its store keeps on disk. Each game shows how many save and config paths are known and whether they exist on disk. From there you can open a folder in Explorer or launch the game. If a save folder has not been created yet, the nearest existing parent opens instead.
 
 - Ctrl+R refreshes the installed games.
 - Ctrl+Shift+R refreshes the game database.
