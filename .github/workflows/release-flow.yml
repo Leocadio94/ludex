@@ -3,7 +3,7 @@ name: Release Flow Launcher plugin
 on:
   push:
     tags:
-      - 'flow-v*'
+      - 'v*'
   workflow_dispatch:
 
 jobs:
@@ -22,6 +22,9 @@ jobs:
         shell: pwsh
         run: |
           $version = (Get-Content src/FlowLauncher/plugin.json | ConvertFrom-Json).Version
+          if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -ne "v$version") {
+            throw "Tag $env:GITHUB_REF_NAME does not match plugin.json Version $version"
+          }
           "version=$version" >> $env:GITHUB_OUTPUT
 
       - name: Publish
@@ -36,3 +39,4 @@ jobs:
         with:
           files: Flow.Launcher.Plugin.Ludex-*.zip
           generate_release_notes: true
+          make_latest: true

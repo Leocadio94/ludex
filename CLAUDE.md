@@ -47,6 +47,8 @@ How it fits together: [docs/architecture.md](docs/architecture.md), [docs/decisi
   `RefreshPage` for progress and `CommandResult.ShowToast` for one-off messages.
 - **Changelogs**: every user-visible change updates `CHANGELOG.md` and the affected launcher's own
   (`src/FlowLauncher`, `src/CommandPalette`, `raycast`) under Unreleased. Raycast keeps its Store format.
+- **Flow releases**: tags are `vX.Y.Z` (no hyphen) and must equal `plugin.json` Version, and the repository's
+  "latest" release must stay the Flow one. See [docs/flow-publishing.md](docs/flow-publishing.md).
 - **Flow plugin ID** (`6F3B2A9C-…` in `plugin.json`) must not change.
 - The Raycast version deliberately differs from the C# pipeline; see the table in `docs/architecture.md` before
   "fixing" either side.
