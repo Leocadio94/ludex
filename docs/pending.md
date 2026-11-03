@@ -4,8 +4,9 @@ Open items that are not part of the current phase. Move each to an issue once so
 
 - **README install section**: when a store publishes Ludex, rewrite "Install" in `README.md` and `README.pt-BR.md`
   with that store's steps and keep "Build from source" for contributors.
-- **Raycast Store**: the extension is ready (`ray lint` passes, 4 screenshots in `raycast/metadata`). Only
-  `npm run publish` is left; it opens a pull request on the public `raycast/extensions` repo.
+- **Raycast Store**: submitted as [raycast/extensions#33081](https://github.com/raycast/extensions/pull/33081),
+  marked ready for review. Answer review comments; each fix is another `npm run publish`, which updates the same
+  pull request. Once merged, rewrite the Raycast row of "Install" in the READMEs.
 - **Raycast details pane (after publish)**: show each game's paths in a `List.Item.Detail`, with the home folder as
   `%USERPROFILE%` so screenshots do not leak the Windows user name.
 - **Command Palette publishing**: replace the template `Identity/@Publisher` in `Package.appxmanifest`, publish
