@@ -224,6 +224,9 @@ function openFolder(p: ResolvedPath) {
   } else if (path.extname(p.path)) {
     target = path.dirname(p.path);
   }
+  while (!fs.existsSync(target) && path.dirname(target) !== target) {
+    target = path.dirname(target);
+  }
   return os.platform() === "darwin" ? showInFinder(target) : open(target);
 }
 

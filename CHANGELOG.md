@@ -23,4 +23,5 @@ All notable changes to Ludex as a whole. Each launcher also keeps its own log:
 ### Fixed
 - `<root>` in manifest paths now resolves to the store root (the folder containing `steamapps`).
 - Search Games in Raycast no longer renders the whole database.
+- Raycast lists games whose save folder does not exist yet (wildcard paths now fall back to the parent folder, as in Flow and Command Palette), and opens the nearest existing folder.
 - Refresh progress and result are shown inside the Flow Launcher list instead of a dialog that stole focus.

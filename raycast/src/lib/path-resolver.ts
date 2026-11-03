@@ -163,5 +163,10 @@ export function resolveAndExpand(
 ): string[] {
   const resolved = resolveTemplate(template, installPath, storeRoot);
   if (!resolved) return [];
-  return expandWildcardPath(resolved);
+  const expanded = expandWildcardPath(resolved);
+  if (expanded.length > 0 || !resolved.includes("*")) return expanded;
+
+  // Only a final-segment wildcard may fall back to its parent; a middle one would hit a shared root like userdata.
+  const parent = path.dirname(resolved);
+  return parent.includes("*") ? [] : [parent];
 }
