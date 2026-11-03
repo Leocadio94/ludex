@@ -1,8 +1,28 @@
-# Ludex for Raycast
+<div align="center">
 
-Windows only.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="media/banner-dark.png">
+  <img alt="Ludex: launch games and open their save, config and install folders" src="media/banner-light.png" width="720">
+</picture>
 
-The Raycast version of [Ludex](https://github.com/Leocadio94/ludex). It lists your installed games and opens their save, config or install folders, or launches the game. Unlike the Flow Launcher and Command Palette versions, this one is written in TypeScript and shares no code with the C# core. Save locations come from the [Ludusavi Manifest](https://github.com/mtkennerly/ludusavi-manifest), a community-maintained database covering about 19,000 games.
+<br>
+
+[![License: MIT](https://img.shields.io/github/license/Leocadio94/ludex?style=flat-square&color=6366F1)](https://github.com/Leocadio94/ludex/blob/main/LICENSE)
+[![Windows 10 | 11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?style=flat-square&logo=windows11&logoColor=white)](#supported-stores)
+[![Raycast](https://img.shields.io/badge/Raycast-extension-8B5CF6?style=flat-square&logo=raycast&logoColor=white)](#features)
+[![Source](https://img.shields.io/badge/source-Leocadio94%2Fludex-6366F1?style=flat-square&logo=github&logoColor=white)](https://github.com/Leocadio94/ludex)
+
+**[Features](#features) · [Supported stores](#supported-stores) · [How it works](#how-it-works) · [Credits](#credits)**
+
+</div>
+
+---
+
+Every PC game hides its saves somewhere different. Ludex puts them one keystroke away: open Raycast, type a game, and jump to its save folder, its config, its install directory, or just start the game. Windows only.
+
+This is the Raycast version of [Ludex](https://github.com/Leocadio94/ludex), which also has a Flow Launcher plugin and a PowerToys Command Palette extension. Those two share a C# core; this one is written in TypeScript and shares no code with them.
+
+Save locations come from the [Ludusavi Manifest](https://github.com/mtkennerly/ludusavi-manifest), a community-maintained database covering about 19,000 games.
 
 ## Features
 
