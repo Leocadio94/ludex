@@ -9,6 +9,7 @@ All notable changes to Ludex as a whole. Each launcher also keeps its own log:
 ### Added
 - Brazilian Portuguese for the Flow Launcher plugin and the Command Palette extension, plus `README.pt-BR.md`.
 - Launch Game in all three launchers.
+- Game icons in Raycast, read from the artwork each store keeps on disk.
 - Shared `Ludex.Core` library for Flow Launcher and Command Palette.
 - Command Palette extension.
 - Logo, banners and generated launcher icons.

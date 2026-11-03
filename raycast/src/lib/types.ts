@@ -9,6 +9,7 @@ export interface InstalledGame {
   storeGameId?: string; // Steam appid, GOG productId, etc.
   installPath?: string; // Full path to game install directory
   launchTarget?: string; // Store URI (steam://, shell:appsFolder\...) or executable path
+  iconPath?: string; // Artwork the store left on disk; an .exe is read for its embedded icon
   storeRoot?: string; // What <root> means: the folder holding steamapps for Steam; unset = parent of installPath
 }
 
@@ -62,6 +63,7 @@ export interface GameWithPaths {
   store: Store;
   storeGameId?: string;
   launchTarget?: string;
+  iconPath?: string;
   savePaths: ResolvedPath[];
   configPaths: ResolvedPath[];
 }

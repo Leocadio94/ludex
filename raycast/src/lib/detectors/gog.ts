@@ -83,11 +83,15 @@ export async function detectGogGames(): Promise<InstalledGame[]> {
     return [];
   }
 
-  return (await getGogGamesWindows()).map((g) => ({
-    name: g.name,
-    store: "gog" as const,
-    storeGameId: g.id || undefined,
-    installPath: g.installPath,
-    launchTarget: findPrimaryPlayTask(g.installPath),
-  }));
+  return (await getGogGamesWindows()).map((g) => {
+    const exe = findPrimaryPlayTask(g.installPath);
+    return {
+      name: g.name,
+      store: "gog" as const,
+      storeGameId: g.id || undefined,
+      installPath: g.installPath,
+      launchTarget: exe,
+      iconPath: exe,
+    };
+  });
 }

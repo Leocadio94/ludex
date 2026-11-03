@@ -108,6 +108,7 @@ export function matchGames(
       store: game.store,
       storeGameId: game.storeGameId,
       launchTarget: game.launchTarget,
+      iconPath: game.iconPath,
       savePaths: deduplicatePaths(savePaths),
       configPaths: deduplicatePaths(configPaths),
     });

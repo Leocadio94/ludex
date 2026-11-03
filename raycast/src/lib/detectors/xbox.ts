@@ -5,6 +5,7 @@ interface XboxGame {
   name: string;
   installPath: string;
   launchTarget?: string;
+  iconPath?: string;
 }
 
 // Reads display name from AppxManifest.xml.
@@ -24,7 +25,20 @@ foreach ($pkg in $packages) {
     if (-not $displayName -or $displayName -match '^ms-resource:') { continue }
     $appId = @($xml.Package.Applications.Application)[0].Id
     $launch = if ($appId) { "shell:appsFolder\\$($pkg.PackageFamilyName)!$appId" } else { $null }
-    $results += [PSCustomObject]@{ name = $displayName; path = $pkg.InstallLocation; launch = $launch }
+    $logo = $null
+    $logoRel = @($xml.Package.Applications.Application)[0].VisualElements.Square150x150Logo
+    if ($logoRel) {
+      $full = Join-Path $pkg.InstallLocation $logoRel
+      if (Test-Path -LiteralPath $full) { $logo = $full }
+      else {
+        $stem = [IO.Path]::GetFileNameWithoutExtension($full)
+        $ext = [IO.Path]::GetExtension($full)
+        $best = Get-ChildItem -LiteralPath (Split-Path $full) -Filter "$stem.*$ext" -ErrorAction SilentlyContinue |
+          Sort-Object Length -Descending | Select-Object -First 1
+        if ($best) { $logo = $best.FullName }
+      }
+    }
+    $results += [PSCustomObject]@{ name = $displayName; path = $pkg.InstallLocation; launch = $launch; icon = $logo }
   } catch { continue }
 }
 
@@ -49,6 +63,7 @@ $results | ConvertTo-Json -Compress -Depth 1
         name: String(item.name),
         installPath: String(item.path),
         launchTarget: item.launch ? String(item.launch) : undefined,
+        iconPath: item.icon ? String(item.icon) : undefined,
       }));
   } catch {
     return [];
@@ -63,5 +78,6 @@ export async function detectXboxGames(): Promise<InstalledGame[]> {
     store: "xbox" as const,
     installPath: g.installPath,
     launchTarget: g.launchTarget,
+    iconPath: g.iconPath,
   }));
 }

@@ -8,6 +8,7 @@ interface EpicManifestItem {
   AppName?: string;
   CatalogItemId?: string;
   InstallLocation?: string;
+  LaunchExecutable?: string;
   bIsIncompleteInstall?: boolean;
 }
 
@@ -53,6 +54,9 @@ export async function detectEpicGames(): Promise<InstalledGame[]> {
         );
         if (manifest.bIsIncompleteInstall) continue;
         if (!manifest.DisplayName || !manifest.InstallLocation) continue;
+        const exe = manifest.LaunchExecutable
+          ? path.join(manifest.InstallLocation, manifest.LaunchExecutable)
+          : undefined;
         games.push({
           name: manifest.DisplayName,
           store: "epic",
@@ -61,6 +65,7 @@ export async function detectEpicGames(): Promise<InstalledGame[]> {
           launchTarget: manifest.AppName
             ? `com.epicgames.launcher://apps/${manifest.AppName}?action=launch&silent=true`
             : undefined,
+          iconPath: exe && fs.existsSync(exe) ? exe : undefined,
         });
       } catch {
         /* skip malformed manifest */

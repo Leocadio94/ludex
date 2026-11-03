@@ -175,6 +175,24 @@ function readAcfFiles(steamAppsPath: string): SteamAcf[] {
   return results;
 }
 
+// The client icon is stored under its content hash (40 hex chars); logo and header are wide fallbacks.
+function findLibraryArt(steamRoot: string, appId: string): string | undefined {
+  const dir = path.join(steamRoot, "appcache", "librarycache", appId);
+  try {
+    const hashed = fs
+      .readdirSync(dir)
+      .find((f) => /^[0-9a-f]{40}\.jpg$/i.test(f));
+    if (hashed) return path.join(dir, hashed);
+    for (const fallback of ["logo.png", "header.jpg"]) {
+      const file = path.join(dir, fallback);
+      if (fs.existsSync(file)) return file;
+    }
+  } catch {
+    /* no cached artwork */
+  }
+  return undefined;
+}
+
 export async function detectSteamGames(): Promise<InstalledGame[]> {
   const steamRoot = getSteamRoot();
   if (!steamRoot) return [];
@@ -189,6 +207,7 @@ export async function detectSteamGames(): Promise<InstalledGame[]> {
         installPath: path.join(libraryPath, "common", acf.installdir),
         storeRoot: path.dirname(libraryPath),
         launchTarget: `steam://rungameid/${acf.appid}`,
+        iconPath: findLibraryArt(steamRoot, acf.appid),
       });
     }
   }

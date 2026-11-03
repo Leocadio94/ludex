@@ -14,6 +14,7 @@ import os from "os";
 import path from "path";
 import { useEffect, useState } from "react";
 import { detectInstalledGames } from "./lib/game-detector";
+import { gameIcon } from "./lib/game-icon";
 import { launchGame } from "./lib/launcher";
 import { loadManifest, refreshManifest } from "./lib/manifest";
 import { matchGames } from "./lib/matcher";
@@ -154,6 +155,7 @@ function GameListItem({
   return (
     <List.Item
       title={game.name}
+      icon={gameIcon(game)}
       accessories={accessories}
       actions={
         <ActionPanel>
