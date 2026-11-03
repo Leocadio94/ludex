@@ -2,6 +2,7 @@ import { Action, ActionPanel, Icon, Keyboard, List } from "@raycast/api";
 import { usePromise } from "@raycast/utils";
 import { useMemo, useRef, useState } from "react";
 import { loadManifest } from "./lib/manifest";
+import { withProgressToast } from "./lib/progress-toast";
 import type { IndexedGame } from "./lib/types";
 
 const MAX_RESULTS = 50;
@@ -20,7 +21,12 @@ export default function Command() {
     async () => {
       const force = forceNext.current;
       forceNext.current = false;
-      return loadManifest(setStatusMsg, force);
+      if (!force) return loadManifest(setStatusMsg);
+      return withProgressToast(
+        "Refreshing game database...",
+        "Game database refreshed",
+        (progress) => loadManifest(progress, true),
+      );
     },
     [],
     { failureToastOptions: { title: "Failed to load the game database" } },

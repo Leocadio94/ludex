@@ -16,6 +16,7 @@ import { gameIcon } from "./lib/game-icon";
 import { launchGame } from "./lib/launcher";
 import { loadManifest } from "./lib/manifest";
 import { matchGames } from "./lib/matcher";
+import { withProgressToast } from "./lib/progress-toast";
 import type { GameWithPaths, ResolvedPath, Store } from "./lib/types";
 
 const STORE_LABEL: Record<Store, string> = {
@@ -34,6 +35,18 @@ const REFRESH_DATABASE_SHORTCUT: Keyboard.Shortcut = {
 
 type LoadMode = "cached" | "installed" | "database";
 
+async function loadGames(
+  progress: (msg: string) => void,
+  forceDatabase: boolean,
+  forceInstalled: boolean,
+): Promise<GameWithPaths[]> {
+  const manifest = await loadManifest(progress, forceDatabase);
+  progress("Detecting installed games...");
+  const installed = await detectInstalledGames(forceInstalled);
+  progress("Matching against database...");
+  return matchGames(installed, manifest);
+}
+
 export default function Command() {
   const [statusMsg, setStatusMsg] = useState("Starting...");
   const nextMode = useRef<LoadMode>("cached");
@@ -47,11 +60,14 @@ export default function Command() {
     async () => {
       const mode = nextMode.current;
       nextMode.current = "cached";
-      const manifest = await loadManifest(setStatusMsg, mode === "database");
-      setStatusMsg("Detecting installed games...");
-      const installed = await detectInstalledGames(mode !== "cached");
-      setStatusMsg("Matching against database...");
-      return matchGames(installed, manifest);
+      if (mode === "cached") return loadGames(setStatusMsg, false, false);
+      return withProgressToast(
+        mode === "database"
+          ? "Refreshing game database..."
+          : "Refreshing installed games...",
+        "Games refreshed",
+        (progress) => loadGames(progress, mode === "database", true),
+      );
     },
     [],
     { failureToastOptions: { title: "Error loading games" } },
