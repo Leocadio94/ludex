@@ -140,7 +140,6 @@ because the alternative is debugging a parser through a launcher UI.
 Ported from the Raycast extension at `raycast/`, which shares the
 pipeline but not the code. Differences that were deliberate:
 
-- Install folder is exposed (the Raycast matcher drops `installPath` after matching).
 - Unmatched games are listed instead of discarded.
 - Manifest `alias` entries are used; the Raycast version parses them into a type it never fills.
 - The V8 heap limit that forced the streaming design there does not apply here, but the

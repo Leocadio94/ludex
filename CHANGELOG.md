@@ -10,6 +10,7 @@ All notable changes to Ludex as a whole. Each launcher also keeps its own log:
 - Brazilian Portuguese for the Flow Launcher plugin and the Command Palette extension, plus `README.pt-BR.md`.
 - Launch Game in all three launchers.
 - Game icons in Raycast, read from the artwork each store keeps on disk.
+- Open Install Folder in Raycast.
 - Shared `Ludex.Core` library for Flow Launcher and Command Palette.
 - Command Palette extension.
 - Logo, banners and generated launcher icons.
@@ -25,3 +26,4 @@ All notable changes to Ludex as a whole. Each launcher also keeps its own log:
 - Search Games in Raycast no longer renders the whole database.
 - Raycast lists games whose save folder does not exist yet (wildcard paths now fall back to the parent folder, as in Flow and Command Palette), and opens the nearest existing folder.
 - Refresh progress and result are shown inside the Flow Launcher list instead of a dialog that stole focus.
+- Raycast: a Steam save path with `<storeGameId>` no longer lists other games' folders; a failed launch, load or download shows an error with a retry; the last database keeps working offline; refreshes no longer write over each other.
