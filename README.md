@@ -28,14 +28,33 @@ Every PC game hides its saves somewhere different: `AppData\Roaming`, `AppData\L
 away. Open your launcher, type a game, and jump to its save folder, its config, its install directory, or just
 start the game.
 
-<p align="center">
-  <img src="docs/images/flow-games.png" alt="Ludex in Flow Launcher: installed games with their save and config counts" width="49%">
-  <img src="docs/images/flow-game.png" alt="A game in Flow Launcher: launch it, or open its save and install folders" width="49%">
-</p>
-<p align="center">
-  <img src="docs/images/cmdpal-games.png" alt="Ludex in Command Palette: installed games with a details pane listing every path" width="49%">
-  <img src="docs/images/cmdpal-search-all.png" alt="Searching the whole game database from Command Palette" width="49%">
-</p>
+<div align="center">
+
+  <table>
+    <tr><th colspan="2">Flow Launcher</th></tr>
+    <tr>
+    <td><img src="docs/images/flow-games.png" alt="Ludex in Flow Launcher: installed games with their save and config counts" width="400"></td>
+    <td><img src="docs/images/flow-game.png" alt="A game in Flow Launcher: launch it, or open its save and install folders" width="400"></td>
+    </tr>
+  </table>
+
+  <table>
+    <tr><th colspan="2">PowerToys Command Palette</th></tr>
+    <tr>
+    <td><img src="docs/images/cmdpal-games.png" alt="Ludex in Command Palette: installed games with a details pane listing every path" width="400"></td>
+    <td><img src="docs/images/cmdpal-search-all.png" alt="Searching the whole game database from Command Palette" width="400"></td>
+    </tr>
+  </table>
+
+  <table>
+    <tr><th colspan="2">Raycast</th></tr>
+    <tr>
+    <td><img src="docs/images/raycast-games.png" alt="Ludex in Raycast: installed games grouped by store, with their artwork and save and config counts" width="400"></td>
+    <td><img src="docs/images/raycast-actions.png" alt="A game in Raycast: Launch Game and its save and config folders in the actions panel" width="400"></td>
+    </tr>
+  </table>
+
+</div>
 
 ## Features
 
@@ -55,20 +74,28 @@ start the game.
 
 | Launcher | Language | Status | Docs |
 |---|---|---|---|
-| [Flow Launcher](https://www.flowlauncher.com) | C# | Works; install from source | [src/FlowLauncher](src/FlowLauncher/README.md) |
+| [Flow Launcher](https://www.flowlauncher.com) | C# | Released ([v1.0.0](https://github.com/Leocadio94/ludex/releases/tag/v1.0.0)); plugin store listing in review | [src/FlowLauncher](src/FlowLauncher/README.md) |
 | [PowerToys Command Palette](https://learn.microsoft.com/windows/powertoys/command-palette/overview) | C# | Works; install from source | [src/CommandPalette](src/CommandPalette/README.md) |
-| [Raycast](https://raycast.com) | TypeScript | Works; install from source | [raycast](raycast/README.md) |
+| [Raycast](https://raycast.com) | TypeScript | Works; Store review in progress, install from source for now | [raycast](raycast/README.md) |
 
 The Flow Launcher and Command Palette versions are thin front ends over the same C# library,
 [`Ludex.Core`](src/Core): store detection, manifest download and indexing, matching and path resolution. The
 Raycast version is a separate TypeScript implementation of the same idea and shares no code with them, so its
 behaviour differs in places. [Why the repository is shaped this way](docs/decisions/0001-monorepo-with-shared-core.md).
 
-None of them is in a store yet.
+None of them is in a store yet. Flow Launcher has a published release, and the Raycast extension is waiting for review.
 
 ## Install
 
-Ludex is not in any store yet. Until it is, [build it from source](#build-from-source).
+Ludex is not in any store yet. Until it is:
+
+- **Flow Launcher**: type this in Flow, then use `lx`.
+
+  ```
+  pm install https://github.com/Leocadio94/ludex/releases/download/v1.0.0/Flow.Launcher.Plugin.Ludex-1.0.0.zip
+  ```
+
+- **Command Palette** and **Raycast**: [build from source](#build-from-source).
 
 ## Build from source
 

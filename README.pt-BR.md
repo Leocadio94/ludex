@@ -28,14 +28,33 @@ Cada jogo de PC guarda os saves num lugar diferente: `AppData\Roaming`, `AppData
 distância. Abra o seu launcher, digite o nome de um jogo e vá direto para a pasta de save, a de configuração, a
 pasta de instalação, ou simplesmente inicie o jogo.
 
-<p align="center">
-  <img src="docs/images/flow-games.png" alt="Ludex no Flow Launcher: jogos instalados com a contagem de saves e configurações" width="49%">
-  <img src="docs/images/flow-game.png" alt="Um jogo no Flow Launcher: iniciar, ou abrir as pastas de save e de instalação" width="49%">
-</p>
-<p align="center">
-  <img src="docs/images/cmdpal-games.png" alt="Ludex no Command Palette: jogos instalados com um painel de detalhes listando todos os caminhos" width="49%">
-  <img src="docs/images/cmdpal-search-all.png" alt="Busca em todo o banco de jogos pelo Command Palette" width="49%">
-</p>
+<div align="center">
+
+  <table>
+    <tr><th colspan="2">Flow Launcher</th></tr>
+    <tr>
+    <td><img src="docs/images/flow-games.png" alt="Ludex no Flow Launcher: jogos instalados com a contagem de saves e configurações" width="400"></td>
+    <td><img src="docs/images/flow-game.png" alt="Um jogo no Flow Launcher: iniciar, ou abrir as pastas de save e de instalação" width="400"></td>
+    </tr>
+  </table>
+
+  <table>
+    <tr><th colspan="2">PowerToys Command Palette</th></tr>
+    <tr>
+    <td><img src="docs/images/cmdpal-games.png" alt="Ludex no Command Palette: jogos instalados com um painel de detalhes listando todos os caminhos" width="400"></td>
+    <td><img src="docs/images/cmdpal-search-all.png" alt="Busca em todo o banco de jogos pelo Command Palette" width="400"></td>
+    </tr>
+  </table>
+
+  <table>
+    <tr><th colspan="2">Raycast</th></tr>
+    <tr>
+    <td><img src="docs/images/raycast-games.png" alt="Ludex no Raycast: jogos instalados agrupados por loja, com a arte de cada um e a contagem de saves e configurações" width="400"></td>
+    <td><img src="docs/images/raycast-actions.png" alt="Um jogo no Raycast: Launch Game e as pastas de save e de configuração no painel de ações" width="400"></td>
+    </tr>
+  </table>
+
+</div>
 
 > As capturas de tela estão em inglês, que é o idioma padrão. Veja [Idioma](#idioma) para saber onde o Ludex
 > aparece em português.
@@ -60,9 +79,9 @@ pasta de instalação, ou simplesmente inicie o jogo.
 
 | Launcher | Linguagem | Situação | Documentação |
 |---|---|---|---|
-| [Flow Launcher](https://www.flowlauncher.com) | C# | Funciona; instalação a partir do código-fonte | [src/FlowLauncher](src/FlowLauncher/README.md) |
+| [Flow Launcher](https://www.flowlauncher.com) | C# | Publicado ([v1.0.0](https://github.com/Leocadio94/ludex/releases/tag/v1.0.0)); listagem na loja de plugins em análise | [src/FlowLauncher](src/FlowLauncher/README.md) |
 | [PowerToys Command Palette](https://learn.microsoft.com/windows/powertoys/command-palette/overview) | C# | Funciona; instalação a partir do código-fonte | [src/CommandPalette](src/CommandPalette/README.md) |
-| [Raycast](https://raycast.com) | TypeScript | Funciona; instalação a partir do código-fonte | [raycast](raycast/README.md) |
+| [Raycast](https://raycast.com) | TypeScript | Funciona; análise da Store em andamento, instale pelo código-fonte por enquanto | [raycast](raycast/README.md) |
 
 As versões do Flow Launcher e do Command Palette são interfaces finas sobre a mesma biblioteca C#,
 [`Ludex.Core`](src/Core): detecção das lojas, download e indexação do manifesto, correspondência e resolução de
@@ -70,11 +89,19 @@ caminhos. A versão do Raycast é uma implementação separada em TypeScript da 
 com as outras, então o comportamento difere em alguns pontos.
 [Por que o repositório tem esse formato](docs/decisions/0001-monorepo-with-shared-core.md) (em inglês).
 
-Nenhuma delas está em uma loja ainda.
+Nenhuma delas está em uma loja ainda. O Flow Launcher já tem uma versão publicada, e a extensão do Raycast aguarda análise.
 
 ## Instalação
 
-O Ludex ainda não está em nenhuma loja. Por enquanto, [compile a partir do código-fonte](#compilar-a-partir-do-código-fonte).
+O Ludex ainda não está em nenhuma loja. Por enquanto:
+
+- **Flow Launcher**: digite isto no Flow e depois use `lx`.
+
+  ```
+  pm install https://github.com/Leocadio94/ludex/releases/download/v1.0.0/Flow.Launcher.Plugin.Ludex-1.0.0.zip
+  ```
+
+- **Command Palette** e **Raycast**: [compile a partir do código-fonte](#compilar-a-partir-do-código-fonte).
 
 ## Compilar a partir do código-fonte
 
