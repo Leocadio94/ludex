@@ -9,11 +9,16 @@ Open items that are not part of the current phase. Move each to an issue once so
   pull request. Once merged, rewrite the Raycast row of "Install" in the READMEs.
 - **Raycast details pane (after publish)**: show each game's paths in a `List.Item.Detail`, with the home folder as
   `%USERPROFILE%` so screenshots do not leak the Windows user name.
-- **Command Palette publishing**: replace the template `Identity/@Publisher` in `Package.appxmanifest`, publish
-  through WinGet (Inno Setup, see `docs/reference/cmdpal-template`) or the Microsoft Store, then add the extension to
-  the community gallery with a pull request to `microsoft/CmdPal-Extensions` (an `extension.json` and an icon pointing
-  to the install source; a Microsoft CLA is required). Copy the publish-extension skill to `.claude/skills/` when
-  starting.
+- **Command Palette publishing**: only the Microsoft Store works today. Command Palette finds extensions through 
+  `AppExtensionCatalog`, so it needs package identity; an Inno Setup EXE that only writes the CLSID is never 
+  discovered (tested on PowerToys 0.102.3001: nothing shows up; [PowerToys#38273]
+  (https://github.com/microsoft/PowerToys/issues/38273) and [#44442](https://github.com/microsoft/PowerToys/issues/44442)
+  are open). The WinGet guide in `docs/reference/cmdpal-template` is wrong on this, and on `InprocServer32`: real 
+  installers use `LocalServer32` with `-RegisterProcessAsComServer`. Plan: open a Partner Center account, replace the 
+  template `Identity/@Publisher` in `Package.appxmanifest` and `AppxPackage*` in `Ludex.csproj` with the Partner 
+  Center values, build the x64 MSIX (add ARM64 only if it can be tested), submit, then add the gallery entry with an 
+  `msstore` install source (pull request to `microsoft/CmdPal-Extensions`: `extension.json` and an icon; a Microsoft 
+  CLA is required). Revisit WinGet when Command Palette supports unpackaged extensions.
 - **Flow Launcher publishing**: ready to release. Push the tag `v1.0.0`, check the release zip, then open the
   manifest pull request. Steps and constraints: [flow-publishing.md](flow-publishing.md). Afterwards, rewrite
   "Install" in the READMEs.
