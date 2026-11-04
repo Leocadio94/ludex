@@ -3,6 +3,11 @@
 Flow Launcher plugin. Format: [Keep a Changelog](https://keepachangelog.com). The version is `Version` in
 `plugin.json`.
 
+## [Unreleased]
+
+### Fixed
+- A save path with `<storeGameId>` no longer lists other games' folders (such as Steam's `userdata`); the path uses the detected store ID and is skipped when there is none.
+
 ## [1.0.0] - 2026-11-03
 
 First public release. The plugin existed before under the name GameSavesManager (keyword `gs`) and was never

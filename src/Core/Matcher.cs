@@ -77,7 +77,7 @@ public static class Matcher
                     if (file.Os is not null && file.Os != PathResolver.CurrentOs) continue;
                     if (file.Store is not null && !aliases.Contains(file.Store, StringComparer.OrdinalIgnoreCase)) continue;
 
-                    foreach (var resolved in PathResolver.ResolveAndExpand(file.Template, game.InstallPath, game.StoreRoot))
+                    foreach (var resolved in PathResolver.ResolveAndExpand(file.Template, game.InstallPath, game.StoreRoot, game.StoreGameId))
                     {
                         var rp = new ResolvedPath
                         {

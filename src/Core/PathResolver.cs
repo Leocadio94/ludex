@@ -17,6 +17,8 @@ public static partial class PathResolver
     [GeneratedRegex(@"<\w+>")]
     private static partial Regex AnyPlaceholderRegex();
 
+    private const string StoreGameIdPlaceholder = "<storeGameId>";
+
     private static readonly Dictionary<string, string> Vars = BuildVars();
 
     private static Dictionary<string, string> BuildVars()
@@ -37,19 +39,26 @@ public static partial class PathResolver
             ["<winDir>"] = Environment.GetFolderPath(Environment.SpecialFolder.Windows),
             // The manifest uses these for per-account subfolders; a wildcard lets
             // ExpandWildcard find whichever account actually exists on disk.
-            ["<storeUserId>"] = "*",
-            ["<storeGameId>"] = "*"
+            ["<storeUserId>"] = "*"
         };
     }
 
     /// <summary>
     /// Substitutes every placeholder in <paramref name="template"/>.
     /// Returns null when the template cannot be fully resolved (e.g. a game-relative
-    /// path for a game with no known install location).
+    /// path for a game with no known install location, or a <c>&lt;storeGameId&gt;</c>
+    /// path for a game with no known store ID).
     /// </summary>
-    public static string? ResolveTemplate(string template, string? installPath, string? storeRoot = null)
+    public static string? ResolveTemplate(string template, string? installPath, string? storeRoot = null, string? storeGameId = null)
     {
         var result = template;
+
+        // A wildcard here would match every other game's folder (e.g. Steam userdata), so an unknown ID skips the path.
+        if (result.Contains(StoreGameIdPlaceholder, StringComparison.Ordinal))
+        {
+            if (string.IsNullOrEmpty(storeGameId)) return null;
+            result = result.Replace(StoreGameIdPlaceholder, storeGameId, StringComparison.Ordinal);
+        }
 
         if (GameRelativeRegex().IsMatch(result))
         {
@@ -158,9 +167,9 @@ public static partial class PathResolver
         }
     }
 
-    public static List<string> ResolveAndExpand(string template, string? installPath, string? storeRoot = null)
+    public static List<string> ResolveAndExpand(string template, string? installPath, string? storeRoot = null, string? storeGameId = null)
     {
-        var resolved = ResolveTemplate(template, installPath, storeRoot);
+        var resolved = ResolveTemplate(template, installPath, storeRoot, storeGameId);
         return resolved is null ? new List<string>() : ExpandWildcard(resolved);
     }
 }

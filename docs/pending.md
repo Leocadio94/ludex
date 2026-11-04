@@ -9,9 +9,6 @@ Open items that are not part of the current phase. Move each to an issue once so
   pull request. Once merged, rewrite the Raycast row of "Install" in the READMEs.
 - **Raycast details pane (after publish)**: show each game's paths in a `List.Item.Detail`, with the home folder as
   `%USERPROFILE%` so screenshots do not leak the Windows user name.
-- **`<storeGameId>` in the C# resolver**: `PathResolver.cs` still replaces it with `*`, so a template like
-  `<root>/userdata/<storeUserId>/<storeGameId>/remote` can list other games' folders. Raycast now substitutes the
-  detected ID and skips the path when it is unknown; port that to Core.
 - **Command Palette publishing**: replace the template `Identity/@Publisher` in `Package.appxmanifest`, publish
   through WinGet (Inno Setup, see `docs/reference/cmdpal-template`) or the Microsoft Store, then add the extension to
   the community gallery with a pull request to `microsoft/CmdPal-Extensions` (an `extension.json` and an icon pointing
